@@ -1,0 +1,51 @@
+<div class="sidebar mt-5 mt-md-0">
+  <div class="widget search-widget mb-5">
+    <h5 class="widget-title text-uppercase">Search</h5>
+    <form class="search-form" method="get" action="{{ path('app_blog') }}">
+      <input type="text" name="q" class="form-control" placeholder="Search...">
+      <button type="submit" class="btn btn-primary">
+        <svg class="search"><use xlink:href="#search"></use></svg>
+      </button>
+    </form>
+  </div>
+
+  <div class="widget categories-widget mb-5">
+    <h5 class="widget-title text-uppercase">Categories</h5>
+    <ul class="list-unstyled">
+      {% for category in blog_categories %}
+        <li class="cat-item">
+          <a href="{{ path('app_blog', {'category': category.slug}) }}">{{ category.name }}</a>
+          <span class="count">{{ category.count }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="widget recent-posts-widget mb-5">
+    <h5 class="widget-title text-uppercase">Recent Posts</h5>
+    <ul class="list-unstyled">
+      {% for post in recent_posts %}
+        <li class="recent-post-item d-flex mb-3">
+          <div class="thumbnail">
+            <img src="{{ asset(post.image) }}" alt="{{ post.title }}" class="img-fluid" width="80">
+          </div>
+          <div class="content ps-3">
+            <h6 class="post-title mb-0">
+              <a href="{{ path('app_single_post', {'slug': post.slug}) }}" class="text-decoration-none text-dark">{{ post.title }}</a>
+            </h6>
+            <div class="post-meta text-muted small">{{ post.createdAt|date('M d, Y') }}</div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="widget tags-widget">
+    <h5 class="widget-title text-uppercase">Tags</h5>
+    <div class="tags-list">
+      {% for tag in blog_tags %}
+        <a href="{{ path('app_blog', {'tag': tag.slug}) }}" class="btn btn-sm btn-outline-dark mb-2 me-2">{{ tag.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>

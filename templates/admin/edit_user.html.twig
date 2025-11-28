@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier utilisateur{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+              <h4 class="mb-0">✏️ Modifier l'utilisateur #{{ user.id }}</h4>
+            </div>
+            <div class="card-body">
+              {{ form_start(form) }}
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    {{ form_row(form.firstName) }}
+                  </div>
+                  <div class="col-md-6">
+                    {{ form_row(form.lastName) }}
+                  </div>
+                  <div class="col-md-6">
+                    {{ form_row(form.email) }}
+                  </div>
+                  <div class="col-md-6">
+                    {{ form_row(form.phoneNumber) }}
+                  </div>
+                  <div class="col-12">
+                    {{ form_row(form.roles) }}
+                  </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-between">
+                  <a href="{{ path('admin_users') }}" class="btn btn-outline-secondary">← Retour à la liste</a>
+                  <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+                </div>
+              {{ form_end(form) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

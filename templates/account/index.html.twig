@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon compte{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Mon compte'
+  } %}
+
+  <section class="account-section padding-large">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+          <div class="card shadow-sm">
+            <div class="card-body p-5">
+              <h2 class="mb-4 text-center">Bienvenue {{ app.user.firstName ~ ' ' ~ app.user.lastName }} !</h2>
+
+              <p class="text-muted text-center mb-4">Voici vos informations personnelles :</p>
+
+              <ul class="list-group mb-4">
+                <li class="list-group-item"><strong>Email :</strong> {{ app.user.email }}</li>
+                <li class="list-group-item"><strong>Téléphone :</strong> {{ app.user.phoneNumber }}</li>
+                <li class="list-group-item"><strong>Date d'inscription :</strong> {{ app.user.createdAt ? app.user.createdAt|date('d/m/Y H:i') : 'Non disponible' }}</li>
+                <li class="list-group-item"><strong>Compte vérifié :</strong> {{ app.user.isVerified ? '✅ Oui' : '❌ Non' }}</li>
+              </ul>
+
+              <h5 class="text-center">Actions disponibles</h5>
+              <div class="d-grid gap-2 col-8 mx-auto mb-4">
+                <a href="{{ path('app_account_edit') }}" class="btn btn-outline-primary">✏️ Modifier mes informations</a>
+                <a href="{{ path('app_account_password') }}" class="btn btn-outline-warning">🔒 Changer mon mot de passe</a>
+                <a href="{{ path('app_orders') }}" class="btn btn-outline-dark">🧾 Voir mes commandes</a>
+              </div>
+
+              <div class="text-center mt-4">
+                <a href="{{ path('app_logout') }}" class="btn btn-outline-danger">🚪 Se déconnecter</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

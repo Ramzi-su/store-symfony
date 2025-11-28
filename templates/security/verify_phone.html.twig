@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Verify Phone - Ministore{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+  
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Verify Phone'
+  } %}
+  
+  <section class="verify-section padding-large">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+          <div class="card shadow-sm">
+            <div class="card-body p-4 p-md-5">
+              <h2 class="text-center mb-4">Verify Your Phone</h2>
+              
+              <p class="text-center mb-4">We've sent a verification code to <strong>{{ phone_number }}</strong>. Please enter the code below to verify your account.</p>
+              
+              {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endif %}
+              
+              <form method="post">
+                <div class="mb-4">
+                  <label for="verification_code" class="form-label">Verification Code</label>
+                  <input type="text" id="verification_code" name="verification_code" class="form-control form-control-lg text-center" placeholder="Enter 6-digit code" maxlength="6" required>
+                </div>
+                
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary btn-lg">Verify</button>
+                </div>
+              </form>
+              
+              <div class="text-center mt-4">
+                <p>Didn't receive a code? <a href="#" class="text-decoration-none">Resend Code</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

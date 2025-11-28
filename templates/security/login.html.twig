@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login - Ministore{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Login'
+  } %}
+
+  <section class="login-section padding-large">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-5">
+          <div class="card shadow-sm">
+            <div class="card-body p-4 p-md-5">
+              <h2 class="text-center mb-4">Sign In</h2>
+
+              {% if verified == 'success' %}
+                <div class="alert alert-success">
+                  Your account has been successfully verified. You can now log in.
+                </div>
+              {% endif %}
+
+              {% if error %}
+                <div class="alert alert-danger">
+                  {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+              {% endif %}
+
+              {{ form_start(loginForm, { action: path('app_login'), method: 'POST' }) }}
+
+                <div class="mb-3">
+                  {{ form_row(loginForm.email) }}
+                </div>
+
+                <div class="mb-3">
+                  {{ form_row(loginForm.password) }}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div class="form-check">
+                    {{ form_widget(loginForm.remember_me) }}
+                    {{ form_label(loginForm.remember_me) }}
+                  </div>
+                  <a href="{{ path('app_forgot_password_request') }}" class="text-decoration-none">Forgot password?</a>
+                </div>
+
+                {# ✅ CSRF TOKEN ajouté ici avec le bon nom #}
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
+                </div>
+              {{ form_end(loginForm) }}
+
+              <div class="text-center mt-4">
+                <p>Don't have an account? <a href="{{ path('app_register') }}" class="text-decoration-none">Register</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

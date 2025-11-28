@@ -1,0 +1,34 @@
+{{ form_start(form) }}
+
+<div class="row">
+  <div class="col-md-6 mb-3">
+    {{ form_label(form.total) }}
+    {{ form_widget(form.total, {'attr': {'class': 'form-control'}}) }}
+    {{ form_errors(form.total) }}
+  </div>
+
+  <div class="col-md-6 mb-3">
+    {{ form_label(form.status) }}
+    {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
+    {{ form_errors(form.status) }}
+  </div>
+</div>
+
+{# Vous pouvez afficher une date lecture seule si souhaité :
+{% if form.vars.value.createdAt is defined %}
+  <div class="mb-3">
+    <label class="form-label">Date de création :</label>
+    <div class="form-control-plaintext">
+      {{ form.vars.value.createdAt|date('d/m/Y H:i') }}
+    </div>
+  </div>
+{% endif %}
+#}
+
+<div class="text-end mt-4">
+  <button class="btn btn-primary">
+    {{ button_label|default('Enregistrer') }}
+  </button>
+</div>
+
+{{ form_end(form) }}

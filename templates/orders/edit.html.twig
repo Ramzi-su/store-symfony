@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la commande #{{ order.id }}{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Modifier la commande #' ~ order.id
+  } %}
+
+  <section class="padding-large">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+          <div class="card shadow-sm border-0 animate__animated animate__fadeIn">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+              <h4 class="mb-0">
+                <i class="bi bi-pencil-square me-2"></i> Modifier la commande #{{ order.id }}
+              </h4>
+            </div>
+
+            <div class="card-body">
+              {{ include('orders/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+            </div>
+
+            <div class="card-footer d-flex justify-content-between align-items-center">
+              <a href="{{ path('app_orders_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left-circle me-1"></i> Retour à la liste
+              </a>
+
+              {{ include('orders/_delete_form.html.twig') }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

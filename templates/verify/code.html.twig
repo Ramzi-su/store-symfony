@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérification du compte{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="max-width: 500px;">
+    <h2 class="mb-4 text-center">🔐 Vérifiez votre compte</h2>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card shadow-sm p-4">
+        {{ form_start(form) }}
+            <div class="mb-3">
+                {{ form_label(form.email) }}
+                {{ form_widget(form.email, { 'attr': {'class': 'form-control'} }) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.code) }}
+                {{ form_widget(form.code, { 'attr': {'class': 'form-control'} }) }}
+            </div>
+            {{ form_widget(form.submit, { 'attr': {'class': 'btn btn-primary w-100'} }) }}
+        {{ form_end(form) }}
+
+        <p class="mt-3 text-center">
+            <a href="{{ path('app_resend_code', {'email': form.email.vars.value}) }}">
+                🔁 Renvoyer le code ?
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}

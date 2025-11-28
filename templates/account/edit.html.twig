@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon profil{% endblock %}
+
+{% block body %}
+<section class="padding-large">
+  <div class="container">
+    <h2>Modifier mes informations</h2>
+
+    {{ form_start(form) }}
+      {{ form_row(form.firstName) }}
+      {{ form_row(form.lastName) }}
+      {{ form_row(form.email) }}
+      {{ form_row(form.phoneNumber) }}
+
+      <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
+    {{ form_end(form) }}
+
+    <a href="{{ path('app_account') }}" class="btn btn-link mt-3">← Retour au profil</a>
+  </div>
+</section>
+{% endblock %}

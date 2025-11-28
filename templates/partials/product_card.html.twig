@@ -1,0 +1,53 @@
+{# templates/partials/product_card.html.twig #}
+<div class="product-card position-relative">
+    {% if product.isIsSale %}        <div class="card-badge bg-primary text-white position-absolute top-0 start-0 m-2 py-1 px-2">Sale</div>
+    {% endif %}
+    <div class="image-holder position-relative">
+        {% if product.slug %}
+  <a href="{{ path('app_single_product', { 'slug': product.slug }) }}">
+    Voir le produit
+  </a>
+{% else %}
+  <span class="text-muted">Slug manquant</span>
+{% endif %}
+
+            <img src="{{ asset(product.image) }}" alt="{{ product.name }}" class="img-fluid">
+        </a>
+        <div class="card-button-group position-absolute bottom-0 start-50 translate-middle-x mb-3">
+            <a href="{{ path('app_cart_add', {'id': product.id}) }}" class="btn btn-sm btn-primary me-1">Add to Cart</a>
+            
+                <svg class="heart" width="16" height="16">
+                    <use xlink:href="#heart"></use>
+                </svg>
+            </a>
+        </div>
+    </div>
+    <div class="card-detail text-center pt-3">
+        <h3 class="card-title fs-6 mb-1">
+           
+        </h3>
+        <div class="rating">
+            {% for i in 1..5 %}
+                
+                    <svg class="star-fill" width="16" height="16">
+                        <use xlink:href="#star-fill"></use>
+                    </svg>
+                
+                    <svg class="star-half" width="16" height="16">
+                        <use xlink:href="#star-half"></use>
+                    </svg>
+                {% else %}
+                    <svg class="star-empty" width="16" height="16">
+                        <use xlink:href="#star-empty"></use>
+                    </svg>
+                
+            {% endfor %}
+        </div>
+        <div class="price">
+            
+             
+            
+            <span class="current-price">${{ product.price }}</span>
+        </div>
+    </div>
+</div>

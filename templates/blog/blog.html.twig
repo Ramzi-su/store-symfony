@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Blog - Ministore{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Blog'
+  } %}
+
+  <section class="blog-section padding-large">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="blog-posts">
+            {% for post in posts %}
+              <div class="post-item mb-5">
+                <div class="post-image mb-3">
+                  <a href="{{ path('app_single_post', {'slug': post.slug}) }}">
+                    <img src="{{ asset(post.image) }}" alt="{{ post.title }}" class="img-fluid rounded">
+                  </a>
+                </div>
+                <div class="post-meta mb-2">
+                  <span class="post-date">{{ post.createdAt|date('F d, Y') }}</span>
+                  <span class="post-author ms-4">By <a href="#" class="text-decoration-none">{{ post.author }}</a></span>
+                  <span class="post-category ms-4">In <a href="#" class="text-decoration-none">{{ post.category }}</a></span>
+                </div>
+                <h2 class="post-title mb-3">
+                  <a href="{{ path('app_single_post', {'slug': post.slug}) }}" class="text-decoration-none text-dark">{{ post.title }}</a>
+                </h2>
+                <div class="post-excerpt mb-3">
+                  <p>{{ post.excerpt }}</p>
+                </div>
+                <a href="{{ path('app_single_post', {'slug': post.slug}) }}" class="btn btn-outline-dark">Read More</a>
+              </div>
+            {% endfor %}
+          </div>
+
+          {% include 'partials/pagination.html.twig' with {
+            'current_page': current_page,
+            'total_pages': total_pages,
+            'route': 'app_blog'
+          } %}
+        </div>
+
+        <div class="col-md-4">
+          {# Désactivé car la variable recent_posts n'est pas envoyée
+          {% include 'partials/blog_sidebar.html.twig' with {'recent_posts': recent_posts} %}
+          #}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle commande{% endblock %}
+
+{% block body %}
+  {# ⬇️ Partials utilisés pour cohérence globale #}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  {# ⬇️ Fil d’Ariane dynamique #}
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Nouvelle commande'
+  } %}
+
+  <section class="padding-large">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+              <h4 class="mb-0">Créer une nouvelle commande</h4>
+            </div>
+            <div class="card-body">
+              {{ include('orders/_form.html.twig') }}
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <a href="{{ path('app_orders_index') }}" class="btn btn-outline-secondary">
+              ← Retour à la liste des commandes
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

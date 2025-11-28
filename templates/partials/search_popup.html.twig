@@ -1,0 +1,157 @@
+{# templates/partials/search_popup.html.twig #}
+<div class="search-popup">
+    <div class="search-popup-container">
+        <form role="search" method="get" class="search-form" action="">
+            <input type="search" id="search-form" class="search-field" placeholder="Type and press enter" value="" name="s" />
+            <button type="submit" class="search-submit">
+                <svg class="search">
+                    <use xlink:href="#search"></use>
+                </svg>
+            </button>
+        </form>
+
+        <h5 class="cat-list-title mt-4 mb-3">Browse Categories</h5>
+        
+        <div class="categories-container">
+            <ul class="categories-list">
+                <li class="category-item">
+                    <a href="#" class="category-link">
+                        <span class="category-icon">📱</span>
+                        <span class="category-name">Mobile Phones</span>
+                    </a>
+                </li>
+                <li class="category-item">
+                    <a href="#" class="category-link">
+                        <span class="category-icon">⌚</span>
+                        <span class="category-name">Smart Watches</span>
+                    </a>
+                </li>
+                <li class="category-item">
+                    <a href="#" class="category-link">
+                        <span class="category-icon">🎧</span>
+                        <span class="category-name">Headphones</span>
+                    </a>
+                </li>
+                <li class="category-item">
+                    <a href="#" class="category-link">
+                        <span class="category-icon">🔌</span>
+                        <span class="category-name">Accessories</span>
+                    </a>
+                </li>
+                <li class="category-item">
+                    <a href="#" class="category-link">
+                        <span class="category-icon">🖥️</span>
+                        <span class="category-name">Monitors</span>
+                    </a>
+                </li>
+                <li class="category-item">
+                    <a href="#" class="category-link">
+                        <span class="category-icon">🔊</span>
+                        <span class="category-name">Speakers</span>
+                    </a>
+                </li>
+                <li class="category-item">
+                    <a href="#" class="category-link">
+                        <span class="category-icon">💾</span>
+                        <span class="category-name">Memory Cards</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styles pour la popup de recherche */
+    .search-popup {
+        position: fixed;
+        top: 70px; /* Ajusté pour correspondre à la hauteur du header */
+        left: 0;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        color: white;
+        z-index: 999;
+        padding: 20px 0;
+        display: none; /* Sera affiché via JavaScript */
+    }
+    
+    .search-popup-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
+    .search-form {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .search-field {
+        width: 100%;
+        padding: 12px 50px 12px 15px;
+        border: none;
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 16px;
+    }
+    
+    .search-submit {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+    
+    .categories-container {
+        margin-top: 15px;
+    }
+    
+    .categories-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+    }
+    
+    .category-item {
+        margin-bottom: 5px;
+    }
+    
+    .category-link {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: white;
+    }
+    
+    .category-link:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .category-icon {
+        margin-right: 8px;
+        font-size: 18px;
+    }
+    
+    .category-name {
+        font-size: 14px;
+    }
+    
+    @media (max-width: 768px) {
+        .categories-list {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+    }
+</style>

@@ -1,0 +1,207 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Shopping Cart - Ministore{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle quantity changes
+    const quantityInputs = document.querySelectorAll('.quantity-input');
+    quantityInputs.forEach(input => {
+      input.addEventListener('change', function() {
+        const form = this.closest('form');
+        form.submit();
+      });
+    });
+
+    // Handle quantity buttons
+    const decrementBtns = document.querySelectorAll('.quantity-decrement');
+    const incrementBtns = document.querySelectorAll('.quantity-increment');
+
+    decrementBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const input = this.parentNode.querySelector('.quantity-input');
+        const currentValue = parseInt(input.value);
+        if (currentValue > 1) {
+          input.value = currentValue - 1;
+          input.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+
+    incrementBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const input = this.parentNode.querySelector('.quantity-input');
+        const currentValue = parseInt(input.value);
+        const maxStock = parseInt(input.dataset.stock);
+        if (currentValue < maxStock) {
+          input.value = currentValue + 1;
+          input.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+
+    // Handle remove buttons
+    const removeBtns = document.querySelectorAll('.remove-item-btn');
+    removeBtns.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to remove this item from your cart?')) {
+          const form = this.closest('form');
+          form.submit();
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+  
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Shopping Cart'
+  } %}
+  
+  <section class="cart-section padding-large">
+    <div class="container">
+      {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+      
+      {% if cart_items is empty %}
+        <div class="text-center py-5">
+          <div class="mb-4">
+            <svg class="cart-outline" width="64" height="64">
+              <use xlink:href="#cart-outline"></use>
+            </svg>
+          </div>
+          <h3 class="mb-3">Your cart is empty</h3>
+          <p class="mb-4">Looks like you haven't added anything to your cart yet.</p>
+          <a href="{{ path('app_shop') }}" class="btn btn-primary">Continue Shopping</a>
+        </div>
+      {% else %}
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="cart-table">
+              <div class="cart-header border-bottom pb-3">
+                <div class="row">
+                  <div class="col-md-5">
+                    <h5 class="mb-0">Product</h5>
+                  </div>
+                  <div class="col-md-2 text-center">
+                    <h5 class="mb-0">Price</h5>
+                  </div>
+                  <div class="col-md-2 text-center">
+                    <h5 class="mb-0">Quantity</h5>
+                  </div>
+                  <div class="col-md-2 text-center">
+                    <h5 class="mb-0">Subtotal</h5>
+                  </div>
+                  <div class="col-md-1 text-center">
+                    <h5 class="mb-0">Remove</h5>
+                  </div>
+                </div>
+              </div>
+              <div class="cart-items">
+                {% for item in cart_items %}
+                  <div class="cart-item py-4 border-bottom">
+                    <div class="row align-items-center">
+                      <div class="col-md-5">
+                        <div class="product-info d-flex align-items-center">
+                          <div class="product-image me-3">
+                            <img src="{{ asset(item.product.image) }}" alt="{{ item.product.name }}" class="img-fluid" width="80">
+                          </div>
+                          <div class="product-details">
+                            <h6 class="mb-0">
+                              <a href="{{ path('app_product_show', {'id': item.product.id}) }}" class="text-decoration-none text-dark">{{ item.product.name }}</a>
+                            </h6>
+                            {% if item.color %}
+                              <p class="text-muted small mb-0">Color: {{ item.color }}</p>
+                            {% endif %}
+                            {% if item.storage %}
+                              <p class="text-muted small mb-0">Storage: {{ item.storage }}</p>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-2 text-center">
+                        <span class="price">${{ item.product.price|number_format(2) }}</span>
+                      </div>
+                      <div class="col-md-2 text-center">
+                        <form action="{{ path('app_cart_update', {'id': item.product.id}) }}" method="post" class="quantity-form">
+                          <input type="hidden" name="color" value="{{ item.color }}">
+                          <input type="hidden" name="storage" value="{{ item.storage }}">
+                          <div class="quantity-selector d-flex justify-content-center">
+                            <button type="button" class="btn btn-sm btn-outline-secondary quantity-decrement">-</button>
+                            <input type="number" name="quantity" class="form-control form-control-sm text-center mx-2 quantity-input" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" data-stock="{{ item.product.stock }}" style="width: 40px;">
+                            <button type="button" class="btn btn-sm btn-outline-secondary quantity-increment">+</button>
+                          </div>
+                        </form>
+                      </div>
+                      <div class="col-md-2 text-center">
+                        <span class="subtotal">${{ (item.product.price * item.quantity)|number_format(2) }}</span>
+                      </div>
+                      <div class="col-md-1 text-center">
+                        <form action="{{ path('app_cart_remove', {'id': item.product.id}) }}" method="post">
+                          <input type="hidden" name="color" value="{{ item.color }}">
+                          <input type="hidden" name="storage" value="{{ item.storage }}">
+                          <button type="button" class="btn btn-link text-danger remove-item-btn p-0">
+                            <svg class="trash" width="16" height="16">
+                              <use xlink:href="#trash"></use>
+                            </svg>
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+              <div class="cart-actions d-flex justify-content-between mt-4">
+                <div class="coupon-form d-flex">
+                  <input type="text" class="form-control me-2" placeholder="Coupon code">
+                  <button class="btn btn-dark">Apply Coupon</button>
+                </div>
+                <form action="{{ path('app_cart_clear') }}" method="post">
+                  <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to clear your cart?')">Clear Cart</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="cart-summary bg-light p-4">
+              <h4 class="mb-4">Cart Totals</h4>
+              <div class="summary-item d-flex justify-content-between mb-3">
+                <span>Subtotal</span>
+                <span>${{ cart_subtotal|number_format(2) }}</span>
+              </div>
+              <div class="summary-item d-flex justify-content-between mb-3">
+                <span>Shipping</span>
+                <span>${{ shipping_cost|number_format(2) }}</span>
+              </div>
+              <div class="summary-item d-flex justify-content-between mb-3">
+                <span>Tax</span>
+                <span>${{ tax|number_format(2) }}</span>
+              </div>
+              <div class="summary-item d-flex justify-content-between mb-3 border-top pt-3">
+                <span class="fw-bold">Total</span>
+                <span class="fw-bold">${{ cart_total|number_format(2) }}</span>
+              </div>
+              <a href="{{ path('app_checkout') }}" class="btn btn-primary w-100 mt-3">Proceed to Checkout</a>
+              <a href="{{ path('app_shop') }}" class="btn btn-outline-dark w-100 mt-2">Continue Shopping</a>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+  
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

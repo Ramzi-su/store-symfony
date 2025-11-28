@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Message envoyé{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  <section class="container py-5 text-center">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <h1 class="mb-4 text-success">✅ Merci pour votre message !</h1>
+        <p class="lead">Nous vous répondrons dans les plus brefs délais.</p>
+        <a href="{{ path('app_home') }}" class="btn btn-outline-primary mt-4">Retour à l'accueil</a>
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

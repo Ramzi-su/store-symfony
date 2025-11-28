@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Order Confirmed - Ministore{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+  
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Order Confirmed'
+  } %}
+  
+  <section class="order-success-section padding-large">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="text-center mb-5">
+            <div class="success-icon mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-check-circle-fill text-success" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+              </svg>
+            </div>
+            <h1 class="display-4 mb-3">Thank You!</h1>
+            <p class="lead mb-4">Your order has been received and is now being processed.</p>
+            <p class="mb-4">Order #{{ order.id }}</p>
+            <div class="d-flex justify-content-center gap-3">
+              <a href="{{ path('app_shop') }}" class="btn btn-outline-primary">Continue Shopping</a>
+              <a href="#" class="btn btn-primary">View Order</a>
+            </div>
+          </div>
+          
+          <div class="order-details card">
+            <div class="card-header bg-light">
+              <h3 class="mb-0">Order Details</h3>
+            </div>
+            <div class="card-body">
+              <div class="row mb-4">
+                <div class="col-md-6 mb-3 mb-md-0">
+                  <h5>Shipping Address</h5>
+                  <address class="mb-0">
+                    {{ order.firstName }} {{ order.lastName }}<br>
+                    {{ order.address }}<br>
+                    {{ order.city }}, {{ order.state }} {{ order.postcode }}<br>
+                    {{ order.country }}
+                  </address>
+                </div>
+                <div class="col-md-6">
+                  <h5>Order Summary</h5>
+                  <ul class="list-unstyled mb-0">
+                    <li><strong>Order Date:</strong> {{ order.createdAt|date('F d, Y') }}</li>
+                    <li><strong>Order Status:</strong> <span class="badge bg-success">{{ order.status|capitalize }}</span></li>
+                    <li><strong>Payment Method:</strong> Credit Card</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th class="text-center">Price</th>
+                      <th class="text-center">Quantity</th>
+                      <th class="text-end">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in order.orderItems %}
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <img src="{{ asset(item.product.image) }}" alt="{{ item.product.name }}" class="img-thumbnail me-3" width="50">
+                            <div>
+                              {{ item.product.name }}
+                              {% if item.color %}
+                                <br><small class="text-muted">Color: {{ item.color }}</small>
+                              {% endif %}
+                              {% if item.storage %}
+                                <br><small class="text-muted">Storage: {{ item.storage }}</small>
+                              {% endif %}
+                            </div>
+                          </div>
+                        </td>
+                        <td class="text-center">${{ item.price|number_format(2) }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">${{ (item.price * item.quantity)|number_format(2) }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="3" class="text-end">Subtotal</td>
+                      <td class="text-end">${{ order.subtotal|number_format(2) }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="3" class="text-end">Shipping</td>
+                      <td class="text-end">${{ order.shippingCost|number_format(2) }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="3" class="text-end">Tax</td>
+                      <td class="text-end">${{ order.tax|number_format(2) }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="3" class="text-end"><strong>Total</strong></td>
+                      <td class="text-end"><strong>${{ order.total|number_format(2) }}</strong></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

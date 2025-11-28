@@ -1,0 +1,291 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ product.name }} - Ministore{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+  
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': product.name,
+    'parent_page': 'Shop',
+    'parent_route': 'app_shop'
+  } %}
+  
+  <section class="single-product-section padding-large">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="product-images">
+            <div class="main-image-container mb-3">
+              <img src="{{ asset(product.image) }}" alt="{{ product.name }}" class="img-fluid main-image">
+            </div>
+            <div class="product-thumbnails d-flex">
+              {% for thumbnail in product.thumbnails %}
+                <div class="thumbnail-item me-2 {% if loop.first %}active{% endif %}">
+                  <img src="{{ asset(thumbnail) }}" alt="{{ product.name }} thumbnail" class="img-fluid" width="100">
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="product-info mt-4 mt-md-0">
+            <h2 class="product-title mb-1">{{ product.name }}</h2>
+            <div class="product-rating d-flex align-items-center mb-3">
+              <div class="rating me-2">
+                {% for i in 1..5 %}
+                  {% if i <= product.rating %}
+                    <svg class="star-fill" width="16" height="16">
+                      <use xlink:href="#star-fill"></use>
+                    </svg>
+                  {% elseif i - 0.5 <= product.rating %}
+                    <svg class="star-half" width="16" height="16">
+                      <use xlink:href="#star-half"></use>
+                    </svg>
+                  {% else %}
+                    <svg class="star-empty" width="16" height="16">
+                      <use xlink:href="#star-empty"></use>
+                    </svg>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <span class="rating-count text-muted">({{ product.reviews_count }} reviews)</span>
+            </div>
+            <div class="product-price mb-3">
+              <span class="price h4">${{ product.price }}</span>
+              {% if product.old_price %}
+                <span class="old-price text-muted text-decoration-line-through ms-2">${{ product.old_price }}</span>
+              {% endif %}
+            </div>
+            <div class="product-description mb-4">
+              <p>{{ product.description }}</p>
+            </div>
+            <div class="product-variations mb-4">
+              {% if product.colors %}
+                <div class="color-options mb-3">
+                  <h6 class="mb-2">Color:</h6>
+                  <div class="d-flex">
+                    {% for color in product.colors %}
+                      <div class="color-option me-2 {% if loop.first %}active{% endif %}" style="background-color: {{ color.hex }};" data-color="{{ color.name }}"></div>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+              {% if product.storage_options %}
+                <div class="storage-options mb-3">
+                  <h6 class="mb-2">Storage:</h6>
+                  <div class="d-flex">
+                    {% for option in product.storage_options %}
+                      <div class="form-check me-3">
+                        <input class="form-check-input" type="radio" name="storage" id="storage{{ option.size }}" {% if loop.first %}checked{% endif %}>
+                        <label class="form-check-label" for="storage{{ option.size }}">
+                          {{ option.size }}GB {% if option.price_add > 0 %}(+${{ option.price_add }}){% endif %}
+                        </label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+            <div class="product-actions mb-4">
+              <div class="quantity-selector d-flex align-items-center mb-3">
+                <h6 class="me-3 mb-0">Quantity:</h6>
+                <div class="d-flex">
+                  <button class="btn btn-outline-secondary btn-sm">-</button>
+                  <input type="text" class="form-control form-control-sm text-center mx-2" value="1" style="width: 50px;">
+                  <button class="btn btn-outline-secondary btn-sm">+</button>
+                </div>
+                <span class="ms-3 text-muted">{{ product.stock }} in stock</span>
+              </div>
+              <div class="d-flex">
+                <button class="btn btn-primary me-2">Add to Cart</button>
+                <button class="btn btn-outline-dark">
+                  <svg class="heart" width="16" height="16">
+                    <use xlink:href="#heart"></use>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="product-meta">
+              <div class="sku mb-2">
+                <span class="fw-bold">SKU:</span> {{ product.sku }}
+              </div>
+              <div class="categories mb-2">
+                <span class="fw-bold">Categories:</span> 
+                {% for category in product.categories %}
+                  <a href="{{ path('app_shop', {'category': category.slug}) }}" class="text-decoration-none">{{ category.name }}</a>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+              </div>
+              <div class="tags">
+                <span class="fw-bold">Tags:</span> 
+                {% for tag in product.tags %}
+                  <a href="{{ path('app_shop', {'tag': tag.slug}) }}" class="text-decoration-none">{{ tag.name }}</a>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="product-details mt-5">
+        <ul class="nav nav-tabs" id="productTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">Description</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button" role="tab" aria-controls="specifications" aria-selected="false">Specifications</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">Reviews ({{ product.reviews_count }})</button>
+          </li>
+        </ul>
+        <div class="tab-content p-4 border border-top-0" id="productTabsContent">
+          <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+            <div class="product-description">
+              {{ product.full_description|raw }}
+            </div>
+          </div>
+          <div class="tab-pane fade" id="specifications" role="tabpanel" aria-labelledby="specifications-tab">
+            <div class="product-specifications">
+              <table class="table table-striped">
+                <tbody>
+                  {% for spec in product.specifications %}
+                    <tr>
+                      <th scope="row">{{ spec.name }}</th>
+                      <td>{{ spec.value }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+            <div class="product-reviews">
+              <div class="review-summary mb-4">
+                <div class="row align-items-center">
+                  <div class="col-md-4 text-center">
+                    <div class="average-rating">
+                      <h2 class="display-4 mb-0">{{ product.rating }}</h2>
+                      <div class="rating my-2">
+                        {% for i in 1..5 %}
+                          {% if i <= product.rating %}
+                            <svg class="star-fill" width="16" height="16">
+                              <use xlink:href="#star-fill"></use>
+                            </svg>
+                          {% elseif i - 0.5 <= product.rating %}
+                            <svg class="star-half" width="16" height="16">
+                              <use xlink:href="#star-half"></use>
+                            </svg>
+                          {% else %}
+                            <svg class="star-empty" width="16" height="16">
+                              <use xlink:href="#star-empty"></use>
+                            </svg>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                      <p class="mb-0">Based on {{ product.reviews_count }} reviews</p>
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="rating-breakdown">
+                      {% for i in 5..1 %}
+                        <div class="rating-item d-flex align-items-center mb-2">
+                          <div class="rating-label me-2">{{ i }} Star</div>
+                          <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ product.rating_breakdown[i] }}%"></div>
+                          </div>
+                          <div class="rating-percent">{{ product.rating_breakdown[i] }}%</div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="review-list mb-4">
+                <h4 class="mb-3">Customer Reviews</h4>
+                {% for review in product.reviews %}
+                  <div class="review-item mb-4 pb-4 border-bottom">
+                    <div class="d-flex">
+                      <div class="reviewer-avatar me-3">
+                        <img src="{{ asset(review.avatar) }}" alt="{{ review.name }}" class="rounded-circle" width="60">
+                      </div>
+                      <div class="review-content">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <h5 class="mb-0">{{ review.name }}</h5>
+                          <div class="rating">
+                            {% for i in 1..5 %}
+                              {% if i <= review.rating %}
+                                <svg class="star-fill" width="14" height="14">
+                                  <use xlink:href="#star-fill"></use>
+                                </svg>
+                              {% else %}
+                                <svg class="star-empty" width="14" height="14">
+                                  <use xlink:href="#star-empty"></use>
+                                </svg>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </div>
+                        <div class="review-date text-muted small mb-2">{{ review.date|date('F d, Y') }}</div>
+                        <p class="mb-0">{{ review.content }}</p>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+              <div class="review-form">
+                <h4 class="mb-3">Write a Review</h4>
+                <form>
+                  <div class="mb-3">
+                    <label for="reviewRating" class="form-label">Your Rating *</label>
+                    <div class="rating-select">
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="rating" id="rating5" value="5" required>
+                        <label class="form-check-label" for="rating5">5</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="rating" id="rating4" value="4">
+                        <label class="form-check-label" for="rating4">4</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="rating" id="rating3" value="3">
+                        <label class="form-check-label" for="rating3">3</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="rating" id="rating2" value="2">
+                        <label class="form-check-label" for="rating2">2</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="rating" id="rating1" value="1">
+                        <label class="form-check-label" for="rating1">1</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="reviewName" class="form-label">Name *</label>
+                    <input type="text" class="form-control" id="reviewName" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="reviewEmail" class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="reviewEmail" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="reviewContent" class="form-label">Your Review *</label>
+                    <textarea class="form-control" id="reviewContent" rows="5" required></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {% include 'partials/related_products.html.twig' with {'related_products': related_products} %}
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

@@ -1,0 +1,19 @@
+{# templates/partials/breadcrumb.html.twig #}
+<section class="page-title-section bg-light-blue">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 text-uppercase text-dark">{{ page_title }}</h1>
+                <div class="breadcrumb-trail">
+                    <a href="{{ path('app_home') }}" class="text-decoration-none text-primary">Home</a>
+                    {% if parent_page is defined and parent_page %}
+                        <span class="mx-2">/</span>
+                        <a href="{{ path(parent_route) }}" class="text-decoration-none text-primary">{{ parent_page }}</a>
+                    {% endif %}
+                    <span class="mx-2">/</span>
+                    <span class="text-dark">{{ page_title }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

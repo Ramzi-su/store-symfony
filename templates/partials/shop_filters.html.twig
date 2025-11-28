@@ -1,0 +1,26 @@
+<div class="shop-filters mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <div class="showing-results">
+        <p class="mb-0">Showing {{ products|length }} of {{ total_products }} results</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="filters-wrapper d-flex justify-content-end align-items-center">
+        <div class="sort-by me-3">
+          <select class="form-select">
+            <option selected>Sort by: Default</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="newest">Newest First</option>
+            <option value="popularity">Popularity</option>
+          </select>
+        </div>
+        <div class="view-switch">
+          <a href="#" class="grid-view active me-2"><i class="bi bi-grid"></i></a>
+          <a href="#" class="list-view"><i class="bi bi-list"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

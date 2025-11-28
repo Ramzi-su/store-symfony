@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register - Ministore{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+  
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Register'
+  } %}
+  
+  <section class="register-section padding-large">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <div class="card shadow-sm">
+            <div class="card-body p-4 p-md-5">
+              <h2 class="text-center mb-4">Create an Account</h2>
+              
+              {{ form_start(registrationForm) }}
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    {{ form_label(registrationForm.firstName) }}
+                    {{ form_widget(registrationForm.firstName) }}
+                    <div class="form-error">
+                      {{ form_errors(registrationForm.firstName) }}
+                    </div>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    {{ form_label(registrationForm.lastName) }}
+                    {{ form_widget(registrationForm.lastName) }}
+                    <div class="form-error">
+                      {{ form_errors(registrationForm.lastName) }}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  {{ form_label(registrationForm.email) }}
+                  {{ form_widget(registrationForm.email) }}
+                  <div class="form-error">
+                    {{ form_errors(registrationForm.email) }}
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  {{ form_label(registrationForm.phoneNumber) }}
+                  {{ form_widget(registrationForm.phoneNumber) }}
+                  <div class="form-error">
+                    {{ form_errors(registrationForm.phoneNumber) }}
+                  </div>
+                  <small class="form-text text-muted">We'll send a verification code to this number.</small>
+                </div>
+                
+                <div class="mb-3">
+                  {{ form_label(registrationForm.plainPassword.first) }}
+                  {{ form_widget(registrationForm.plainPassword.first) }}
+                  <div class="form-error">
+                    {{ form_errors(registrationForm.plainPassword.first) }}
+                  </div>
+                </div>
+                
+                <div class="mb-4">
+                  {{ form_label(registrationForm.plainPassword.second) }}
+                  {{ form_widget(registrationForm.plainPassword.second) }}
+                  <div class="form-error">
+                    {{ form_errors(registrationForm.plainPassword.second) }}
+                  </div>
+                </div>
+                
+                <div class="form-check mb-4">
+                  {{ form_widget(registrationForm.agreeTerms) }}
+                  {{ form_label(registrationForm.agreeTerms) }}
+                  <div class="form-error">
+                    {{ form_errors(registrationForm.agreeTerms) }}
+                  </div>
+                </div>
+                
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                </div>
+              {{ form_end(registrationForm) }}
+              
+              <div class="text-center mt-4">
+                <p>Already have an account? <a href="{{ path('app_login') }}" class="text-decoration-none">Sign in</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

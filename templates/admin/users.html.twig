@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des utilisateurs{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  <section class="py-5 bg-light">
+    <div class="container">
+      <h2 class="mb-4">👥 Utilisateurs enregistrés</h2>
+
+      <form method="get" class="mb-4 row g-2 align-items-center">
+        <div class="col-auto">
+          <input type="text" name="q" value="{{ search }}" placeholder="Recherche par nom, prénom ou email"
+                 class="form-control" />
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-outline-primary">🔍 Rechercher</button>
+        </div>
+      </form>
+
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered align-middle text-center">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Nom complet</th>
+              <th>Email</th>
+              <th>Téléphone</th>
+              <th>Rôles</th>
+              <th>Vérifié</th>
+              <th>Créé le</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in pagination %}
+              <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.firstName }} {{ user.lastName }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.phoneNumber }}</td>
+                <td>
+                  {% for role in user.roles %}
+                    <span class="badge bg-secondary">{{ role }}</span>
+                  {% endfor %}
+                </td>
+                <td>
+                  {% if user.isVerified %}
+                    <span class="badge bg-success">Oui</span>
+                  {% else %}
+                    <span class="badge bg-danger">Non</span>
+                  {% endif %}
+                </td>
+                <td>{{ user.createdAt|date('d/m/Y H:i') }}</td>
+                <td>
+                  <a href="{{ path('admin_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-warning">✏️ Modifier</a>
+
+                  {% if app.user.id != user.id %}
+                    <form method="post"
+                          action="{{ path('admin_user_delete', {'id': user.id}) }}"
+                          class="d-inline"
+                          onsubmit="return confirm('Supprimer cet utilisateur ?');">
+                      <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                      <button class="btn btn-sm btn-outline-danger">🗑️ Supprimer</button>
+                    </form>
+                  {% else %}
+                    <span class="text-muted">(vous)</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="8" class="text-center text-muted">Aucun utilisateur trouvé.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 text-center">
+        {{ knp_pagination_render(pagination) }}
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

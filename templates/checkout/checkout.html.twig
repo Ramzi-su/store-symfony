@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Checkout - Ministore{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+  
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Checkout',
+    'parent_page': 'Cart',
+    'parent_route': 'app_cart'
+  } %}
+  
+  <section class="checkout-section padding-large">
+    <div class="container">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endfor %}
+      
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="checkout-form">
+            <h3 class="mb-4">Billing Details</h3>
+            <form action="{{ path('app_checkout_create_session') }}" method="post" id="checkout-form">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="firstName" class="form-label">First Name *</label>
+                  <input type="text" class="form-control" id="firstName" name="firstName" required {% if app.user %}value="{{ app.user.firstName }}"{% endif %}>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="lastName" class="form-label">Last Name *</label>
+                  <input type="text" class="form-control" id="lastName" name="lastName" required {% if app.user %}value="{{ app.user.lastName }}"{% endif %}>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="companyName" class="form-label">Company Name (Optional)</label>
+                <input type="text" class="form-control" id="companyName" name="companyName">
+              </div>
+              <div class="mb-3">
+                <label for="country" class="form-label">Country / Region *</label>
+                <select class="form-select" id="country" name="country" required>
+                  <option value="">Select a country</option>
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="AU">Australia</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="streetAddress" class="form-label">Street Address *</label>
+                <input type="text" class="form-control mb-2" id="streetAddress" name="streetAddress" placeholder="House number and street name" required>
+                <input type="text" class="form-control" name="streetAddress2" placeholder="Apartment, suite, unit, etc. (optional)">
+              </div>
+              <div class="mb-3">
+                <label for="city" class="form-label">Town / City *</label>
+                <input type="text" class="form-control" id="city" name="city" required>
+              </div>
+              <div class="mb-3">
+                <label for="state" class="form-label">State / Province *</label>
+                <select class="form-select" id="state" name="state" required>
+                  <option value="">Select a state</option>
+                  <option value="AL">Alabama</option>
+                  <option value="AK">Alaska</option>
+                  <option value="AZ">Arizona</option>
+                  <!-- More states would be listed here -->
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="postcode" class="form-label">Postcode / ZIP *</label>
+                <input type="text" class="form-control" id="postcode" name="postcode" required>
+              </div>
+              <div class="mb-3">
+                <label for="phone" class="form-label">Phone *</label>
+                <input type="tel" class="form-control" id="phone" name="phone" required {% if app.user %}value="{{ app.user.phoneNumber }}"{% endif %}>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email Address *</label>
+                <input type="email" class="form-control" id="email" name="email" required {% if app.user %}value="{{ app.user.email }}"{% endif %}>
+              </div>
+              <div class="mb-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="createAccount" name="createAccount" {% if not app.user %}checked{% else %}disabled{% endif %}>
+                  <label class="form-check-label" for="createAccount">
+                    {% if app.user %}
+                      You are already logged in
+                    {% else %}
+                      Create an account?
+                    {% endif %}
+                  </label>
+                </div>
+              </div>
+              <div class="mb-4">
+                <h3>Additional Information</h3>
+                <div class="mb-3">
+                  <label for="orderNotes" class="form-label">Order Notes (Optional)</label>
+                  <textarea class="form-control" id="orderNotes" name="orderNotes" rows="4" placeholder="Notes about your order, e.g. special notes for delivery"></textarea>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="order-summary bg-light p-4">
+            <h3 class="mb-4">Your Order</h3>
+            <div class="order-products mb-4">
+              <div class="order-product-header d-flex justify-content-between border-bottom pb-2 mb-2">
+                <span class="fw-bold">Product</span>
+                <span class="fw-bold">Subtotal</span>
+              </div>
+              {% for item in cart_items %}
+                <div class="order-product-item d-flex justify-content-between mb-2">
+                  <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                  <span>${{ (item.product.price * item.quantity)|number_format(2) }}</span>
+                </div>
+              {% endfor %}
+            </div>
+            <div class="order-subtotal d-flex justify-content-between mb-2">
+              <span>Subtotal</span>
+              <span>${{ cart_subtotal|number_format(2) }}</span>
+            </div>
+            <div class="order-shipping d-flex justify-content-between mb-2">
+              <span>Shipping</span>
+              <span>${{ shipping_cost|number_format(2) }}</span>
+            </div>
+            <div class="order-tax d-flex justify-content-between mb-2">
+              <span>Tax</span>
+              <span>${{ tax|number_format(2) }}</span>
+            </div>
+            <div class="order-total d-flex justify-content-between border-top pt-2 mb-4">
+              <span class="fw-bold">Total</span>
+              <span class="fw-bold">${{ cart_total|number_format(2) }}</span>
+            </div>
+            <div class="payment-methods mb-4">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" checked>
+                <label class="form-check-label" for="creditCard">
+                  Credit Card (Stripe)
+                </label>
+                <div class="payment-description small text-muted mt-1">
+                  Pay securely using your credit card via Stripe.
+                </div>
+              </div>
+            </div>
+            <div class="terms-conditions mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="termsConditions" required>
+                <label class="form-check-label" for="termsConditions">
+                  I have read and agree to the website <a href="#">terms and conditions</a> *
+                </label>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" form="checkout-form">Place Order</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

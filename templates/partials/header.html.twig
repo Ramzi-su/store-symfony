@@ -1,0 +1,107 @@
+<header id="header" class="site-header position-fixed top-0 w-100 text-black bg-light" style="z-index: 1030;">
+  <nav id="header-nav" class="navbar navbar-expand-lg px-3">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ path('app_home') }}">
+        <img src="{{ asset('images/main-logo.png') }}" class="logo">
+      </a>
+      <button class="navbar-toggler d-flex d-lg-none order-3 p-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#bdNavbar" aria-controls="bdNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <svg class="navbar-icon"><use xlink:href="#navbar-icon"></use></svg>
+      </button>
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="bdNavbar" aria-labelledby="bdNavbarOffcanvasLabel">
+        <div class="offcanvas-header px-4 pb-0">
+          <a class="navbar-brand" href="{{ path('app_home') }}">
+            <img src="{{ asset('images/main-logo.png') }}" class="logo">
+          </a>
+          <button type="button" class="btn-close btn-close-black" data-bs-dismiss="offcanvas" aria-label="Close" data-bs-target="#bdNavbar"></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul id="navbar" class="navbar-nav text-uppercase justify-content-end align-items-center flex-grow-1 pe-3">
+            <li class="nav-item">
+              <a class="nav-link me-4 {% if app.request.attributes.get('_route') == 'app_home' %}active{% endif %}" href="{{ path('app_home') }}">Accueil</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link me-4 {% if app.request.attributes.get('_route') == 'app_about' %}active{% endif %}" href="{{ path('app_about') }}">À propos</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link me-4 {% if app.request.attributes.get('_route') == 'app_shop' %}active{% endif %}" href="{{ path('app_shop') }}">Boutique</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link me-4 {% if app.request.attributes.get('_route') == 'app_blog' %}active{% endif %}" href="{{ path('app_blog') }}">Blog</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Pages</a>
+              <ul class="dropdown-menu">
+                <li><a href="{{ path('app_about') }}" class="dropdown-item">À propos</a></li>
+                <li><a href="{{ path('app_blog') }}" class="dropdown-item">Blog</a></li>
+                <li><a href="{{ path('app_shop') }}" class="dropdown-item">Boutique</a></li>
+                <li><a href="{{ path('app_cart') }}" class="dropdown-item">Panier</a></li>
+                <li><a href="{{ path('app_checkout') }}" class="dropdown-item">Paiement</a></li>
+                <li><a href="#" class="dropdown-item disabled">Article unique</a></li>
+                <li><a href="#" class="dropdown-item disabled">Produit unique</a></li>
+                <li><a href="{{ path('app_contact') }}" class="dropdown-item">Contact</a></li>
+              </ul>
+            </li>
+
+            <li class="nav-item">
+              <div class="user-items ps-5">
+                <ul class="d-flex justify-content-end list-unstyled">
+                  <li class="search-item pe-3">
+                    <a href="#" class="search-button">
+                      <svg class="search"><use xlink:href="#search"></use></svg>
+                    </a>
+                  </li>
+                  <li class="pe-3">
+                    <div class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <svg class="user"><use xlink:href="#user"></use></svg>
+                      </a>
+                      <ul class="dropdown-menu dropdown-menu-end">
+                        {% if app.user %}
+                          <li>
+                            <a class="dropdown-item {% if app.request.attributes.get('_route') == 'app_account' %}active{% endif %}" href="{{ path('app_account') }}">
+                              👤 Mon compte
+                              {% if not app.user.isVerified %}
+                                <span class="badge bg-warning text-dark ms-2">Non vérifié</span>
+                              {% endif %}
+                            </a>
+                          </li>
+                          <li>
+                            <a class="dropdown-item" href="{{ path('app_orders') }}">📦 Mes commandes</a>
+                          </li>
+
+                          {% if 'ROLE_ADMIN' in app.user.roles %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                              <a class="dropdown-item text-warning fw-semibold" href="{{ path('admin_dashboard') }}">
+                                🛡️ Espace Admin
+                              </a>
+                            </li>
+                          {% endif %}
+
+                          <li><hr class="dropdown-divider"></li>
+                          <li><a class="dropdown-item text-danger" href="{{ path('app_logout') }}">🚪 Se déconnecter</a></li>
+                        {% else %}
+                          <li><a class="dropdown-item" href="{{ path('app_login') }}">🔐 Connexion</a></li>
+                          <li><a class="dropdown-item" href="{{ path('app_register') }}">📝 Créer un compte</a></li>
+                        {% endif %}
+                      </ul>
+                    </div>
+                  </li>
+                  <li>
+                    <a href="{{ path('app_cart') }}">
+                      <svg class="cart"><use xlink:href="#cart"></use></svg>
+                      {% if cart_count is defined and cart_count > 0 %}
+                        <span class="cart-count">{{ cart_count }}</span>
+                      {% endif %}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>

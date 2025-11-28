@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Shop - Ministore{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+  
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Shop'
+  } %}
+  
+  <section class="shop-section padding-large">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="shop-sidebar">
+            <div class="widget categories-widget mb-5">
+              <h5 class="widget-title text-uppercase">Categories</h5>
+              <ul class="list-unstyled">
+                <li class="cat-item {% if category == 'all' %}active{% endif %}">
+                  <a href="{{ path('app_shop') }}">All Categories</a>
+                </li>
+                {% for category in categories %}
+                  <li class="cat-item {% if category == category.slug %}active{% endif %}">
+                    <a href="{{ path('app_shop', {'category': category.slug}) }}">{{ category.name }}</a>
+                    <span class="count">{{ category.count }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+            
+            <div class="widget price-filter-widget mb-5">
+              <h5 class="widget-title text-uppercase">Filter by Price</h5>
+              <div class="price-range-slider">
+                <div id="priceRange"></div>
+                <div class="price-inputs mt-3 d-flex">
+                  <div class="min-price">
+                    <label for="minPrice" class="form-label">Min</label>
+                    <div class="input-group">
+                      <span class="input-group-text">$</span>
+                      <input type="number" class="form-control" id="minPrice" value="0">
+                    </div>
+                  </div>
+                  <div class="max-price ms-2">
+                    <label for="maxPrice" class="form-label">Max</label>
+                    <div class="input-group">
+                      <span class="input-group-text">$</span>
+                      <input type="number" class="form-control" id="maxPrice" value="2000">
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn-dark btn-sm mt-3">Filter</button>
+              </div>
+            </div>
+            
+            <div class="widget brands-widget mb-5">
+              <h5 class="widget-title text-uppercase">Brands</h5>
+              <div class="brands-list">
+                {% for brand in brands %}
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="brand{{ loop.index }}" {% if brand.slug in selected_brands %}checked{% endif %}>
+                    <label class="form-check-label" for="brand{{ loop.index }}">
+                      {{ brand.name }} <span class="text-muted">({{ brand.count }})</span>
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            
+            <div class="widget colors-widget mb-5">
+              <h5 class="widget-title text-uppercase">Colors</h5>
+              <div class="colors-list">
+                {% for color in colors %}
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="color{{ loop.index }}" {% if color.slug in selected_colors %}checked{% endif %}>
+                    <label class="form-check-label" for="color{{ loop.index }}">
+                      <span class="color-swatch" style="background-color: {{ color.hex }};"></span>
+                      {{ color.name }} <span class="text-muted">({{ color.count }})</span>
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            
+            <div class="widget tags-widget">
+              <h5 class="widget-title text-uppercase">Product Tags</h5>
+              <div class="tags-list">
+                {% for tag in tags %}
+                  <a href="{{ path('app_shop', {'tag': tag.slug}) }}" class="btn btn-sm btn-outline-dark mb-2 me-2 {% if tag.slug in selected_tags %}active{% endif %}">{{ tag.name }}</a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-9">
+          {% include 'partials/shop_filters.html.twig' with {
+            'products': products,
+            'total_products': total_products
+          } %}
+          
+          <div class="products-grid">
+            <div class="row">
+              {% for product in products %}
+                <div class="col-md-4 col-sm-6 mb-4">
+                  {% include 'partials/product_card.html.twig' with {'product': product} %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          
+          {% include 'partials/pagination.html.twig' with {
+            'current_page': current_page,
+            'total_pages': total_pages,
+            'route': 'app_shop'
+          } %}
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

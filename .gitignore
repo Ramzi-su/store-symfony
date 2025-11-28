@@ -1,0 +1,46 @@
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/dev/
+/config/secrets/dev.pem
+/config/secrets/prod/
+/config/secrets/prod.pem
+/var/
+/vendor/
+/public/bundles/
+/public/build/
+###< symfony/framework-bundle ###
+
+###> symfony/phpunit-bridge ###
+/.phpunit.result.cache
+###< symfony/phpunit-bridge ###
+
+###> doctrine/doctrine-bundle ###
+var/cache/dev/doctrine/
+var/cache/prod/doctrine/
+###< doctrine/doctrine-bundle ###
+
+# Fichiers d'IDE
+.idea/
+.vscode/
+
+# Fichiers générés par le système d'exploitation
+.DS_Store
+._*
+Thumbs.db
+
+# Logs et fichiers temporaires
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Artefacts de build locaux et dépendances front-end
+/node_modules/
+
+# Rapports de couverture de tests
+/coverage/
+
+# Dossier pour les fichiers uploadés (à adapter si besoin)
+/public/uploads/

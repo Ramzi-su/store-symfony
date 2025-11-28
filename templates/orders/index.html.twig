@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des commandes{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  {% include 'partials/breadcrumb.html.twig' with {
+    'page_title': 'Liste des commandes'
+  } %}
+
+  <section class="padding-large">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Toutes les commandes</h2>
+        <a href="{{ path('app_orders_new') }}" class="btn btn-success">
+          <i class="bi bi-plus-circle me-1"></i> Nouvelle commande
+        </a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center shadow-sm">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Total</th>
+              <th>Statut</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+              <tr>
+                <td>{{ order.id }}</td>
+                <td>${{ order.total|number_format(2, '.', ',') }}</td>
+                <td>
+                  {% if order.status == 'paid' %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Payée</span>
+                  {% elseif order.status == 'pending' %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>En attente</span>
+                  {% else %}
+                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Annulée</span>
+                  {% endif %}
+                </td>
+                <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</td>
+                <td>
+                  <div class="d-flex justify-content-center gap-2">
+                    <a href="{{ path('app_orders_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye-fill me-1"></i> Détails
+                    </a>
+                    <a href="{{ path('app_orders_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-secondary">
+                      <i class="bi bi-pencil-fill me-1"></i> Modifier
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-muted">Aucune commande trouvée.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}

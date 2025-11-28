@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}About - Ministore{% endblock %}
+
+{% block body %}
+    {% include 'partials/svg_icons.html.twig' %}
+    {% include 'partials/search_popup.html.twig' %}
+    {% include 'partials/header.html.twig' %}
+    
+    {% include 'partials/breadcrumb.html.twig' with {
+        'page_title': 'About Us'
+    } %}
+    
+    <section class="about-section padding-large">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="image-holder">
+              <img src="{{ asset('images/about-image.jpg') }}" alt="about us" class="img-fluid">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="about-content">
+              <h2 class="display-5 text-uppercase text-dark mb-4">Our Story</h2>
+              <p>Founded in 2010, Ministore began as a small tech shop with a big vision. We started with a simple idea: to provide high-quality tech products with exceptional customer service at reasonable prices.</p>
+              <p>Over the years, we've grown from a single store to a nationwide retailer with an extensive online presence. Our commitment to quality and customer satisfaction has remained unwavering throughout our journey.</p>
+              <p>Today, we offer a wide range of products from smartphones and smartwatches to accessories and audio equipment. We carefully select each item in our inventory to ensure it meets our high standards of quality and performance.</p>
+              <a href="{{ path('app_shop') }}" class="btn btn-medium btn-dark text-uppercase btn-rounded-none mt-3">Shop Now</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="our-team bg-light-blue padding-large">
+      <div class="container">
+        <div class="row">
+          <div class="col-12 text-center mb-5">
+            <h2 class="display-5 text-uppercase text-dark">Meet Our Team</h2>
+            <p class="w-50 mx-auto">Our dedicated team of professionals works tirelessly to bring you the best tech products and shopping experience.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3 col-sm-6 mb-4">
+            <div class="team-member text-center">
+              <div class="member-image">
+                <img src="{{ asset('images/team-member1.jpg') }}" alt="team member" class="img-fluid rounded-circle">
+              </div>
+              <div class="member-details mt-3">
+                <h4 class="text-uppercase">John Smith</h4>
+                <p class="text-muted">Founder & CEO</p>
+                <div class="social-links mt-2">
+                  <a href="#" class="me-2"><svg class="facebook"><use xlink:href="#facebook"></use></svg></a>
+                  <a href="#" class="me-2"><svg class="twitter"><use xlink:href="#twitter"></use></svg></a>
+                  <a href="#" class="me-2"><svg class="instagram"><use xlink:href="#instagram"></use></svg></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-4">
+            <div class="team-member text-center">
+              <div class="member-image">
+                <img src="{{ asset('images/team-member2.jpg') }}" alt="team member" class="img-fluid rounded-circle">
+              </div>
+              <div class="member-details mt-3">
+                <h4 class="text-uppercase">Sarah Johnson</h4>
+                <p class="text-muted">Marketing Director</p>
+                <div class="social-links mt-2">
+                  <a href="#" class="me-2"><svg class="facebook"><use xlink:href="#facebook"></use></svg></a>
+                  <a href="#" class="me-2"><svg class="twitter"><use xlink:href="#twitter"></use></svg></a>
+                  <a href="#" class="me-2"><svg class="instagram"><use xlink:href="#instagram"></use></svg></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-4">
+            <div class="team-member text-center">
+              <div class="member-image">
+                <img src="{{ asset('images/team-member3.jpg') }}" alt="team member" class="img-fluid rounded-circle">
+              </div>
+              <div class="member-details mt-3">
+                <h4 class="text-uppercase">Michael Brown</h4>
+                <p class="text-muted">Product Manager</p>
+                <div class="social-links mt-2">
+                  <a href="#" class="me-2"><svg class="facebook"><use xlink:href="#facebook"></use></svg></a>
+                  <a href="#" class="me-2"><svg class="twitter"><use xlink:href="#twitter"></use></svg></a>
+                  <a href="#" class="me-2"><svg class="instagram"><use xlink:href="#instagram"></use></svg></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-4">
+            <div class="team-member text-center">
+              <div class="member-image">
+                <img src="{{ asset('images/team-member4.jpg') }}" alt="team member" class="img-fluid rounded-circle">
+              </div>
+              <div class="member-details mt-3">
+                <h4 class="text-uppercase">Emily Davis</h4>
+                <p class="text-muted">Customer Service</p>
+                <div class="social-links mt-2">
+                  <a href="#" class="me-2"><svg class="facebook"><use xlink:href="#facebook"></use></svg></a>
+                  <a href="#" class="me-2"><svg class="twitter"><use xlink:href="#twitter"></use></svg></a>
+                  <a href="#" class="me-2"><svg class="instagram"><use xlink:href="#instagram"></use></svg></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="our-values padding-large">
+      <div class="container">
+        <div class="row">
+          <div class="col-12 text-center mb-5">
+            <h2 class="display-5 text-uppercase text-dark">Our Values</h2>
+            <p class="w-50 mx-auto">These core values guide everything we do at Ministore.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="value-item text-center p-4 border">
+              <div class="icon-box mb-3">
+                <svg class="quality" width="48" height="48"><use xlink:href="#quality"></use></svg>
+              </div>
+              <h3 class="text-uppercase">Quality</h3>
+              <p>We are committed to offering only the highest quality products that meet our rigorous standards.</p>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="value-item text-center p-4 border">
+              <div class="icon-box mb-3">
+                <svg class="shield-plus" width="48" height="48"><use xlink:href="#shield-plus"></use></svg>
+              </div>
+              <h3 class="text-uppercase">Integrity</h3>
+              <p>We conduct our business with honesty, transparency, and ethical practices at all times.</p>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="value-item text-center p-4 border">
+              <div class="icon-box mb-3">
+                <svg class="cart-outline" width="48" height="48"><use xlink:href="#cart-outline"></use></svg>
+              </div>
+              <h3 class="text-uppercase">Customer Focus</h3>
+              <p>Our customers are at the heart of everything we do. We strive to exceed their expectations.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    {% include 'partials/subscribe.html.twig' %}
+    {% include 'partials/footer.html.twig' %}
+{% endblock %}

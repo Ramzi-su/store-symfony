@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/search_popup.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
+  <section class="py-5 bg-light">
+    <div class="container">
+      <h2 class="mb-4">🎛️ Tableau de bord d'administration</h2>
+
+      <p class="lead">Bienvenue, <strong>{{ app.user.firstName }} {{ app.user.lastName }}</strong> !</p>
+      <p class="text-muted">
+        Vous avez les droits <code>ROLE_ADMIN</code> et pouvez gérer les utilisateurs, les commandes, et plus encore.
+      </p>
+
+      <div class="row mt-5">
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm border-primary">
+            <div class="card-body">
+              <h5 class="card-title">👥 Gestion des utilisateurs</h5>
+              <p class="card-text">Ajouter, modifier ou supprimer des comptes utilisateurs.</p>
+              <a href="{{ path('admin_users') }}" class="btn btn-outline-primary">Accéder</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm border-dark">
+            <div class="card-body">
+              <h5 class="card-title">📦 Commandes</h5>
+              <p class="card-text">Consulter les commandes passées par les utilisateurs.</p>
+              <a href="{{ path('app_orders_index') }}" class="btn btn-outline-dark">Voir les commandes</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% include 'partials/subscribe.html.twig' %}
+  {% include 'partials/footer.html.twig' %}
+{% endblock %}
