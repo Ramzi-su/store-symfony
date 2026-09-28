@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 #[Route('/cart')]
 class CartController extends AbstractController
@@ -22,25 +21,32 @@ class CartController extends AbstractController
     private CartItemRepository $cartItemRepo;
     private ProductRepository $productRepo;
     private SessionInterface $session;
-    private CsrfTokenManagerInterface $csrf;
 
     public function __construct(
         EntityManagerInterface $em,
         CartItemRepository $cartItemRepo,
         ProductRepository $productRepo,
-        RequestStack $requestStack,
-        CsrfTokenManagerInterface $csrf
+        RequestStack $requestStack
     ) {
         $this->em = $em;
         $this->cartItemRepo = $cartItemRepo;
         $this->productRepo = $productRepo;
         $this->session = $requestStack->getSession();
-        $this->csrf = $csrf;
     }
 
     private function generateKey(Product $product, ?string $color, ?string $storage): string
     {
         return $product->getId() . '-' . ($color ?? '') . '-' . ($storage ?? '');
+    }
+
+    private function invalidTokenResponse(Request $request): Response
+    {
+        if ($request->isXmlHttpRequest()) {
+            return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $this->addFlash('error', 'Votre session a expiré, veuillez réessayer.');
+        return $this->redirectToRoute('app_cart');
     }
 
     #[Route('', name: 'app_cart')]
@@ -86,9 +92,13 @@ class CartController extends AbstractController
         ]);
     }
 
-    #[Route('/add/{id}', name: 'app_cart_add', methods: ['POST','GET'])]
+    #[Route('/add/{id}', name: 'app_cart_add', methods: ['POST'])]
     public function add(Request $request, Product $product): Response
     {
+        if (!$this->isCsrfTokenValid('cart', (string) $request->request->get('_token'))) {
+            return $this->invalidTokenResponse($request);
+        }
+
         $quantity = max(1, min(99, (int)$request->request->get('quantity', 1)));
         $color = $request->request->get('color');
         $storage = $request->request->get('storage');
@@ -130,6 +140,10 @@ class CartController extends AbstractController
     #[Route('/update/{id}', name: 'app_cart_update', methods: ['POST'])]
     public function update(Request $request, Product $product): Response
     {
+        if (!$this->isCsrfTokenValid('cart', (string) $request->request->get('_token'))) {
+            return $this->invalidTokenResponse($request);
+        }
+
         $quantity = max(1, min(99, (int)$request->request->get('quantity', 1)));
         $color = $request->request->get('color');
         $storage = $request->request->get('storage');
@@ -164,6 +178,10 @@ class CartController extends AbstractController
     #[Route('/remove/{id}', name: 'app_cart_remove', methods: ['POST'])]
     public function remove(Request $request, Product $product): Response
     {
+        if (!$this->isCsrfTokenValid('cart', (string) $request->request->get('_token'))) {
+            return $this->invalidTokenResponse($request);
+        }
+
         $color = $request->request->get('color');
         $storage = $request->request->get('storage');
 
@@ -193,8 +211,12 @@ class CartController extends AbstractController
     }
 
     #[Route('/clear', name: 'app_cart_clear', methods: ['POST'])]
-    public function clear(): Response
+    public function clear(Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('cart', (string) $request->request->get('_token'))) {
+            return $this->invalidTokenResponse($request);
+        }
+
         if ($this->getUser()) {
             $items = $this->cartItemRepo->findBy(['user' => $this->getUser()]);
             foreach ($items as $item) {

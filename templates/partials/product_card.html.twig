@@ -14,7 +14,11 @@
             <img src="{{ asset(product.image) }}" alt="{{ product.name }}" class="img-fluid">
         </a>
         <div class="card-button-group position-absolute bottom-0 start-50 translate-middle-x mb-3">
-            <a href="{{ path('app_cart_add', {'id': product.id}) }}" class="btn btn-sm btn-primary me-1">Add to Cart</a>
+            {# A POST form with a CSRF token: a plain link (GET) could be triggered by another website #}
+            <form action="{{ path('app_cart_add', {'id': product.id}) }}" method="post" class="d-inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('cart') }}">
+                <button type="submit" class="btn btn-sm btn-primary me-1">Add to Cart</button>
+            </form>
             
                 <svg class="heart" width="16" height="16">
                     <use xlink:href="#heart"></use>
