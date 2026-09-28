@@ -17,3 +17,12 @@ framework:
             limit: 3
             interval: '1 hour'
             lock_factory: null
+
+        # Registration sends an SMS too: 5 accounts per client IP per hour.
+        # Behind a reverse proxy, configure framework.trusted_proxies or every
+        # visitor will share the proxy's IP.
+        registration:
+            policy: sliding_window
+            limit: 5
+            interval: '1 hour'
+            lock_factory: null

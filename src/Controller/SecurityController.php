@@ -13,6 +13,7 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
@@ -43,13 +44,22 @@ class SecurityController extends AbstractController
     return $this->redirectToRoute('app_account');
     }
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher): Response
-    {
+    public function register(
+        Request $request,
+        UserPasswordHasherInterface $userPasswordHasher,
+        RateLimiterFactory $registrationLimiter
+    ): Response {
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Each registration sends a paid SMS: limit per client IP.
+            if (!$registrationLimiter->create($request->getClientIp())->consume()->isAccepted()) {
+                $this->addFlash('danger', 'Trop d’inscriptions depuis votre connexion. Veuillez réessayer plus tard.');
+                return $this->redirectToRoute('app_register');
+            }
+
             $user->setPassword(
                 $userPasswordHasher->hashPassword(
                     $user,
@@ -66,10 +76,13 @@ class SecurityController extends AbstractController
             $this->entityManager->persist($user);
             $this->entityManager->flush();
 
-            $this->twilioService->sendSms(
+            $sent = $this->twilioService->sendSms(
                 $user->getPhoneNumber(),
                 "Votre code de vérification est : $verificationCode"
             );
+            if (!$sent) {
+                $this->addFlash('danger', 'Le SMS n’a pas pu être envoyé. Utilisez « Renvoyer le code ».');
+            }
 
             return $this->redirectToRoute('app_verify_account', [
                 'email' => $user->getEmail()

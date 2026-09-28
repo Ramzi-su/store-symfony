@@ -18,7 +18,11 @@
           <div class="card shadow-sm">
             <div class="card-body p-4 p-md-5">
               <h2 class="text-center mb-4">Create an Account</h2>
-              
+
+              {% for message in app.flashes('danger') %}
+                <div class="alert alert-danger" role="alert">{{ message }}</div>
+              {% endfor %}
+
               {{ form_start(registrationForm) }}
                 <div class="row">
                   <div class="col-md-6 mb-3">

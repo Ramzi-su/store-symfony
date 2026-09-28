@@ -29,12 +29,21 @@ class ApiRegisterController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         ValidatorInterface $validator,
-        TwilioService $twilioService
+        TwilioService $twilioService,
+        RateLimiterFactory $registrationLimiter
     ): JsonResponse {
+        // Each registration sends a paid SMS: limit per client IP.
+        if (!$registrationLimiter->create($request->getClientIp())->consume()->isAccepted()) {
+            return new JsonResponse(['error' => 'Too many registrations. Try again later.'], Response::HTTP_TOO_MANY_REQUESTS);
+        }
+
         $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            return new JsonResponse(['error' => 'Invalid JSON body.'], Response::HTTP_BAD_REQUEST);
+        }
 
         foreach (['email', 'password', 'firstName', 'lastName', 'phoneNumber'] as $field) {
-            if (empty($data[$field])) {
+            if (!isset($data[$field]) || !is_string($data[$field]) || trim($data[$field]) === '') {
                 return new JsonResponse(['error' => "$field is required"], Response::HTTP_BAD_REQUEST);
             }
         }
@@ -45,9 +54,19 @@ class ApiRegisterController extends AbstractController
         $lastName = trim($data['lastName']);
         $phoneNumber = trim($data['phoneNumber']);
 
-        $violations = $validator->validate($email, [new Assert\Email()]);
-        if (count($violations) > 0) {
-            return new JsonResponse(['error' => $violations[0]->getMessage()], Response::HTTP_BAD_REQUEST);
+        // Same rules as RegistrationFormType, so the API is not a weaker entry point than the web form.
+        $rules = [
+            'email' => [$email, [new Assert\Email(), new Assert\Length(max: 180)]],
+            'password' => [$password, [new Assert\Length(min: 8, max: 4096)]],
+            'firstName' => [$firstName, [new Assert\Length(max: 100)]],
+            'lastName' => [$lastName, [new Assert\Length(max: 100)]],
+            'phoneNumber' => [$phoneNumber, [new Assert\Regex(pattern: '/^\+[1-9]\d{1,14}$/', message: 'Invalid phone number, use the international format (e.g. +1234567890).')]],
+        ];
+        foreach ($rules as $field => [$value, $constraints]) {
+            $violations = $validator->validate($value, $constraints);
+            if (count($violations) > 0) {
+                return new JsonResponse(['error' => "$field: " . $violations[0]->getMessage()], Response::HTTP_BAD_REQUEST);
+            }
         }
 
         $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
@@ -70,13 +89,16 @@ class ApiRegisterController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        try {
-            $twilioService->sendSms(
-                $phoneNumber,
-                "Votre code de vérification est : " . $user->getVerificationCode()
+        // sendSms() never throws: it logs the Twilio error and returns false.
+        $sent = $twilioService->sendSms(
+            $phoneNumber,
+            "Votre code de vérification est : " . $user->getVerificationCode()
+        );
+        if (!$sent) {
+            return new JsonResponse(
+                ['error' => 'User registered, but the verification SMS could not be sent.'],
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
-        } catch (\Exception $e) {
-            return new JsonResponse(['error' => 'Erreur envoi SMS : ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return new JsonResponse(['success' => 'User registered. Verification code sent.'], Response::HTTP_CREATED);
