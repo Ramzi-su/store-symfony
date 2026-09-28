@@ -30,6 +30,13 @@ class OrderItems
     #[ORM\Column]
     private ?float $price = null;
 
+    // Product options chosen in the cart, copied at order time.
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $color = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $storage = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -76,6 +83,28 @@ class OrderItems
     public function setPrice(float $price): static
     {
         $this->price = $price;
+        return $this;
+    }
+
+    public function getColor(): ?string
+    {
+        return $this->color;
+    }
+
+    public function setColor(?string $color): static
+    {
+        $this->color = $color;
+        return $this;
+    }
+
+    public function getStorage(): ?string
+    {
+        return $this->storage;
+    }
+
+    public function setStorage(?string $storage): static
+    {
+        $this->storage = $storage;
         return $this;
     }
 }
