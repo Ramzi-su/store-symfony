@@ -9,6 +9,9 @@ parameters:
     twilio.from: '%env(TWILIO_FROM)%'
     app.project_name: 'technologia !!'
     app.stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
+    # "default::" resolves to null when the variable is missing, so the app still boots
+    # (the webhook then answers 503 and logs an error instead of crashing).
+    app.stripe_webhook_secret: '%env(default::STRIPE_WEBHOOK_SECRET)%'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -32,4 +35,5 @@ services:
     App\Controller\CheckoutController:
         arguments:
             $stripeSecretKey: '%app.stripe_secret_key%'
+            $stripeWebhookSecret: '%app.stripe_webhook_secret%'
           

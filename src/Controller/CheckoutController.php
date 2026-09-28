@@ -7,9 +7,12 @@ use App\Entity\OrderItems;
 use App\Repository\CartItemRepository;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
 use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\SignatureVerificationException;
+use Stripe\Webhook;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,19 +29,22 @@ class CheckoutController extends AbstractController
     private ProductRepository $productRepo;
     private SessionInterface $session;
     private ?string $stripeSecretKey;
+    private ?string $stripeWebhookSecret;
 
     public function __construct(
         EntityManagerInterface $em,
         CartItemRepository $cartRepo,
         ProductRepository $productRepo,
         RequestStack $requestStack,
-        ?string $stripeSecretKey
+        ?string $stripeSecretKey,
+        ?string $stripeWebhookSecret
     ) {
         $this->em = $em;
         $this->cartRepo = $cartRepo;
         $this->productRepo = $productRepo;
         $this->session = $requestStack->getSession();
         $this->stripeSecretKey = $stripeSecretKey;
+        $this->stripeWebhookSecret = $stripeWebhookSecret;
     }
 
     #[Route('', name: 'app_checkout')]
@@ -61,11 +67,18 @@ class CheckoutController extends AbstractController
     }
 
     #[Route('/create-session', name: 'app_checkout_create_session', methods: ['POST'])]
-    public function createSession(Request $request): Response
+    public function createSession(Request $request, LoggerInterface $logger): Response
     {
         if ($this->isCartEmpty()) {
             $this->addFlash('error', 'Votre panier est vide.');
             return $this->redirectToRoute('app_cart');
+        }
+
+        // Without Stripe there is no way to take a payment: refuse instead of faking a success.
+        if (!$this->stripeSecretKey) {
+            $logger->error('Checkout attempted but STRIPE_SECRET_KEY is not configured.');
+            $this->addFlash('error', 'Le paiement est momentanément indisponible.');
+            return $this->redirectToRoute('app_checkout');
         }
 
         [$items, $subtotal, $shipping, $tax, $total] = $this->getCartDetails();
@@ -156,30 +169,52 @@ class CheckoutController extends AbstractController
                     'metadata' => ['order_id' => $order->getId()],
                 ]);
 
-                $order->setStripeSessionId($session->id);
-                $this->em->flush();
+                // Kept server-side so the success page knows which Stripe session to verify.
+                $this->session->set('stripe_session_id', $session->id);
 
                 return $this->redirect($session->url);
             } catch (ApiErrorException $e) {
-                $this->addFlash('error', 'Erreur Stripe : ' . $e->getMessage());
+                // Stripe error details stay in the logs, never in the user's browser.
+                $logger->error('Stripe checkout session creation failed.', ['exception' => $e]);
+                $this->addFlash('error', 'Le paiement n’a pas pu être initialisé. Veuillez réessayer.');
                 return $this->redirectToRoute('app_checkout');
             }
         }
 
-        return $this->redirectToRoute('app_checkout_success');
+        return $this->redirectToRoute('app_checkout');
     }
 
     #[Route('/success', name: 'app_checkout_success')]
-    public function success(): Response
+    public function success(LoggerInterface $logger): Response
     {
         $orderId = $this->session->get('order_id');
-        if (!$orderId) return $this->redirectToRoute('app_home');
+        $stripeSessionId = $this->session->get('stripe_session_id');
+        if (!$orderId || !$stripeSessionId || !$this->stripeSecretKey) {
+            return $this->redirectToRoute('app_home');
+        }
 
         $order = $this->em->getRepository(Orders::class)->find($orderId);
-        if (!$order) return $this->redirectToRoute('app_home');
+        if (!$order) {
+            return $this->redirectToRoute('app_home');
+        }
 
-        $order->setStatus('paid');
-        $this->em->flush();
+        // Anyone can open this URL: the redirect itself proves nothing.
+        // Ask Stripe whether this checkout session was really paid for this order.
+        try {
+            Stripe::setApiKey($this->stripeSecretKey);
+            $stripeSession = StripeSession::retrieve($stripeSessionId);
+        } catch (ApiErrorException $e) {
+            $logger->error('Could not retrieve Stripe checkout session.', ['exception' => $e]);
+            $this->addFlash('error', 'Impossible de vérifier le paiement pour le moment.');
+            return $this->redirectToRoute('app_checkout');
+        }
+
+        if (!$this->isPaidSessionForOrder($stripeSession, $order)) {
+            $this->addFlash('error', 'Le paiement n’a pas été confirmé.');
+            return $this->redirectToRoute('app_checkout');
+        }
+
+        $this->markOrderPaid($order);
 
         if ($this->getUser()) {
             foreach ($this->cartRepo->findBy(['user' => $this->getUser()]) as $item) {
@@ -191,8 +226,45 @@ class CheckoutController extends AbstractController
         }
 
         $this->session->remove('order_id');
+        $this->session->remove('stripe_session_id');
 
         return $this->render('checkout/success.html.twig', ['order' => $order]);
+    }
+
+    /**
+     * Stripe calls this endpoint server-to-server once a payment is completed.
+     * It is the reliable source of truth: it still works if the customer closes
+     * the tab before reaching the success page.
+     */
+    #[Route('/webhook', name: 'app_checkout_webhook', methods: ['POST'])]
+    public function webhook(Request $request, LoggerInterface $logger): Response
+    {
+        if (!$this->stripeWebhookSecret) {
+            $logger->error('Stripe webhook received but STRIPE_WEBHOOK_SECRET is not configured.');
+            return new Response('', Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        // The signature proves the request comes from Stripe and was not modified.
+        try {
+            $event = Webhook::constructEvent(
+                $request->getContent(),
+                (string) $request->headers->get('Stripe-Signature'),
+                $this->stripeWebhookSecret
+            );
+        } catch (\UnexpectedValueException | SignatureVerificationException) {
+            return new Response('', Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($event->type === 'checkout.session.completed') {
+            $stripeSession = $event->data->object;
+            $order = $this->em->getRepository(Orders::class)->find((int) ($stripeSession->metadata['order_id'] ?? 0));
+
+            if ($order && $this->isPaidSessionForOrder($stripeSession, $order)) {
+                $this->markOrderPaid($order);
+            }
+        }
+
+        return new Response('', Response::HTTP_OK);
     }
 
     #[Route('/cancel', name: 'app_checkout_cancel')]
@@ -210,6 +282,21 @@ class CheckoutController extends AbstractController
 
         $this->addFlash('error', 'Paiement annulé.');
         return $this->redirectToRoute('app_checkout');
+    }
+
+    private function isPaidSessionForOrder(StripeSession $stripeSession, Orders $order): bool
+    {
+        return $stripeSession->payment_status === 'paid'
+            && (string) ($stripeSession->metadata['order_id'] ?? '') === (string) $order->getId();
+    }
+
+    // Idempotent: the webhook and the success page may both report the same payment.
+    private function markOrderPaid(Orders $order): void
+    {
+        if ($order->getStatus() !== 'paid') {
+            $order->setStatus('paid');
+            $this->em->flush();
+        }
     }
 
     private function isCartEmpty(): bool
