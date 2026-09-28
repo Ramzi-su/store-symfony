@@ -15,9 +15,11 @@
     <div class="container">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Toutes les commandes</h2>
+        {% if is_granted('ROLE_ADMIN') %}
         <a href="{{ path('app_orders_new') }}" class="btn btn-success">
           <i class="bi bi-plus-circle me-1"></i> Nouvelle commande
         </a>
+        {% endif %}
       </div>
 
       <div class="table-responsive">
@@ -47,6 +49,8 @@
                 </td>
                 <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</td>
                 <td>
+                  {# This template is shared with /account/orders: admin-only links are hidden for customers #}
+                  {% if is_granted('ROLE_ADMIN') %}
                   <div class="d-flex justify-content-center gap-2">
                     <a href="{{ path('app_orders_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary">
                       <i class="bi bi-eye-fill me-1"></i> Détails
@@ -55,6 +59,7 @@
                       <i class="bi bi-pencil-fill me-1"></i> Modifier
                     </a>
                   </div>
+                  {% endif %}
                 </td>
               </tr>
             {% else %}

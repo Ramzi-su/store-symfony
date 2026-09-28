@@ -28,14 +28,14 @@ security:
                 path: app_logout
                 target: /
 
+    # Rules are evaluated top to bottom and the FIRST match wins:
+    # restricted paths must come before the catch-all public rule.
     access_control:
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/api, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/user, roles: ROLE_ADMIN }
+        - { path: ^/orders, roles: ROLE_ADMIN }
         - { path: ^/account, roles: ROLE_USER }
         - { path: ^/, roles: PUBLIC_ACCESS }
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/.*, roles: PUBLIC_ACCESS }
 
 when@test:
     security:
