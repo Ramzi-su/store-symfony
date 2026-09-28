@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/checkout')]
 class CheckoutController extends AbstractController
@@ -57,7 +58,7 @@ class CheckoutController extends AbstractController
 
         [$items, $subtotal, $shipping, $tax, $total] = $this->getCartDetails();
 
-        return $this->render('checkout/index.html.twig', [
+        return $this->render('checkout/checkout.html.twig', [
             'cart_items' => $items,
             'cart_subtotal' => $subtotal,
             'shipping_cost' => $shipping,
@@ -67,8 +68,13 @@ class CheckoutController extends AbstractController
     }
 
     #[Route('/create-session', name: 'app_checkout_create_session', methods: ['POST'])]
-    public function createSession(Request $request, LoggerInterface $logger): Response
+    public function createSession(Request $request, LoggerInterface $logger, ValidatorInterface $validator): Response
     {
+        if (!$this->isCsrfTokenValid('checkout', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Votre session a expiré, veuillez réessayer.');
+            return $this->redirectToRoute('app_checkout');
+        }
+
         if ($this->isCartEmpty()) {
             $this->addFlash('error', 'Votre panier est vide.');
             return $this->redirectToRoute('app_cart');
@@ -92,15 +98,31 @@ class CheckoutController extends AbstractController
         $order->setShippingCost($shipping);
         $order->setCreatedAt(new \DateTimeImmutable());
 
-        $order->setFirstName($request->get('firstName'));
-        $order->setLastName($request->get('lastName'));
-        $order->setEmail($request->get('email'));
-        $order->setPhoneNumber($request->get('phone'));
-        $order->setAddress($request->get('streetAddress'));
-        $order->setCity($request->get('city'));
-        $order->setState($request->get('state'));
-        $order->setPostcode($request->get('postcode'));
-        $order->setCountry($request->get('country'));
+        // Form field name => entity setter. Values are trimmed strings (null when empty),
+        // then checked by the constraints of the "checkout" validation group.
+        $fields = [
+            'firstName' => 'setFirstName',
+            'lastName' => 'setLastName',
+            'email' => 'setEmail',
+            'phone' => 'setPhoneNumber',
+            'streetAddress' => 'setAddress',
+            'city' => 'setCity',
+            'state' => 'setState',
+            'postcode' => 'setPostcode',
+            'country' => 'setCountry',
+        ];
+        foreach ($fields as $field => $setter) {
+            $value = trim((string) $request->request->get($field, ''));
+            $order->$setter($value === '' ? null : $value);
+        }
+
+        $violations = $validator->validate($order, null, ['checkout']);
+        if (count($violations) > 0) {
+            foreach ($violations as $violation) {
+                $this->addFlash('error', $violation->getPropertyPath() . ' : ' . $violation->getMessage());
+            }
+            return $this->redirectToRoute('app_checkout');
+        }
 
         $this->em->persist($order);
 
@@ -112,76 +134,78 @@ class CheckoutController extends AbstractController
             $orderItem->setPrice($item['product']->getPrice());
             $orderItem->setColor($item['color'] ?? null);
             $orderItem->setStorage($item['storage'] ?? null);
-            $this->em->persist($orderItem);
+            $order->addItem($orderItem);
         }
 
         $this->em->flush();
         $this->session->set('order_id', $order->getId());
 
-        if ($this->stripeSecretKey) {
-            try {
-                Stripe::setApiKey($this->stripeSecretKey);
-                $lineItems = [];
+        try {
+            Stripe::setApiKey($this->stripeSecretKey);
+            $lineItems = [];
 
-                foreach ($items as $item) {
-                    $lineItems[] = [
-                        'price_data' => [
-                            'currency' => 'usd',
-                            'unit_amount' => (int) ($item['product']->getPrice() * 100),
-                            'product_data' => [
-                                'name' => $item['product']->getName(),
-                                'images' => [$this->getParameter('app.base_url') . $item['product']->getImage()],
-                            ],
+            foreach ($items as $item) {
+                $lineItems[] = [
+                    'price_data' => [
+                        'currency' => 'usd',
+                        'unit_amount' => $this->toCents($item['product']->getPrice()),
+                        'product_data' => [
+                            'name' => $item['product']->getName(),
+                            // Stripe needs absolute, publicly reachable URLs.
+                            'images' => $item['product']->getImage()
+                                ? [$request->getSchemeAndHttpHost() . '/' . ltrim($item['product']->getImage(), '/')]
+                                : [],
                         ],
-                        'quantity' => $item['quantity'],
-                    ];
-                }
-
-                if ($shipping > 0) {
-                    $lineItems[] = [
-                        'price_data' => [
-                            'currency' => 'usd',
-                            'unit_amount' => (int) ($shipping * 100),
-                            'product_data' => ['name' => 'Shipping'],
-                        ],
-                        'quantity' => 1,
-                    ];
-                }
-
-                if ($tax > 0) {
-                    $lineItems[] = [
-                        'price_data' => [
-                            'currency' => 'usd',
-                            'unit_amount' => (int) ($tax * 100),
-                            'product_data' => ['name' => 'Tax'],
-                        ],
-                        'quantity' => 1,
-                    ];
-                }
-
-                $session = StripeSession::create([
-                    'payment_method_types' => ['card'],
-                    'line_items' => $lineItems,
-                    'mode' => 'payment',
-                    'success_url' => $this->generateUrl('app_checkout_success', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                    'cancel_url' => $this->generateUrl('app_checkout_cancel', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                    'customer_email' => $order->getEmail(),
-                    'metadata' => ['order_id' => $order->getId()],
-                ]);
-
-                // Kept server-side so the success page knows which Stripe session to verify.
-                $this->session->set('stripe_session_id', $session->id);
-
-                return $this->redirect($session->url);
-            } catch (ApiErrorException $e) {
-                // Stripe error details stay in the logs, never in the user's browser.
-                $logger->error('Stripe checkout session creation failed.', ['exception' => $e]);
-                $this->addFlash('error', 'Le paiement n’a pas pu être initialisé. Veuillez réessayer.');
-                return $this->redirectToRoute('app_checkout');
+                    ],
+                    'quantity' => $item['quantity'],
+                ];
             }
-        }
 
-        return $this->redirectToRoute('app_checkout');
+            if ($shipping > 0) {
+                $lineItems[] = [
+                    'price_data' => [
+                        'currency' => 'usd',
+                        'unit_amount' => $this->toCents($shipping),
+                        'product_data' => ['name' => 'Shipping'],
+                    ],
+                    'quantity' => 1,
+                ];
+            }
+
+            if ($tax > 0) {
+                $lineItems[] = [
+                    'price_data' => [
+                        'currency' => 'usd',
+                        'unit_amount' => $this->toCents($tax),
+                        'product_data' => ['name' => 'Tax'],
+                    ],
+                    'quantity' => 1,
+                ];
+            }
+
+            $session = StripeSession::create([
+                'payment_method_types' => ['card'],
+                'line_items' => $lineItems,
+                'mode' => 'payment',
+                'success_url' => $this->generateUrl('app_checkout_success', [], UrlGeneratorInterface::ABSOLUTE_URL),
+                'cancel_url' => $this->generateUrl('app_checkout_cancel', [], UrlGeneratorInterface::ABSOLUTE_URL),
+                'customer_email' => $order->getEmail(),
+                'metadata' => ['order_id' => $order->getId()],
+            ]);
+
+            // Stored on the order (reconciliation, webhook check) and in the session
+            // (so the success page knows which Stripe session to verify).
+            $order->setStripeSessionId($session->id);
+            $this->em->flush();
+            $this->session->set('stripe_session_id', $session->id);
+
+            return $this->redirect($session->url);
+        } catch (ApiErrorException $e) {
+            // Stripe error details stay in the logs, never in the user's browser.
+            $logger->error('Stripe checkout session creation failed.', ['exception' => $e]);
+            $this->addFlash('error', 'Le paiement n’a pas pu être initialisé. Veuillez réessayer.');
+            return $this->redirectToRoute('app_checkout');
+        }
     }
 
     #[Route('/success', name: 'app_checkout_success')]
@@ -287,6 +311,7 @@ class CheckoutController extends AbstractController
     private function isPaidSessionForOrder(StripeSession $stripeSession, Orders $order): bool
     {
         return $stripeSession->payment_status === 'paid'
+            && $stripeSession->id === $order->getStripeSessionId()
             && (string) ($stripeSession->metadata['order_id'] ?? '') === (string) $order->getId();
     }
 
@@ -297,6 +322,12 @@ class CheckoutController extends AbstractController
             $order->setStatus('paid');
             $this->em->flush();
         }
+    }
+
+    // round() first: 19.99 * 100 is 1998.9999... in floating point, and (int) alone would give 1998.
+    private function toCents(float $amount): int
+    {
+        return (int) round($amount * 100);
     }
 
     private function isCartEmpty(): bool
@@ -324,8 +355,10 @@ class CheckoutController extends AbstractController
                 ];
             }
         } else {
-            foreach ($this->session->get('cart', []) as $id => $entry) {
-                $product = $this->productRepo->find($id);
+            foreach ($this->session->get('cart', []) as $key => $entry) {
+                // Guest cart keys are "productId-color-storage" (see CartController::generateKey()).
+                [$id] = explode('-', (string) $key);
+                $product = $this->productRepo->find((int) $id);
                 if ($product) {
                     $subtotal += $product->getPrice() * $entry['quantity'];
                     $items[] = [
