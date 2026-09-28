@@ -1,0 +1,12 @@
+{# Expects "status": an App\Enum\OrderStatus case (or null for legacy rows) #}
+{% set badge = {
+    'pending': {class: 'bg-warning text-dark', icon: 'bi-hourglass-split'},
+    'paid': {class: 'bg-success', icon: 'bi-check-circle'},
+    'shipped': {class: 'bg-info', icon: 'bi-truck'},
+    'cancelled': {class: 'bg-danger', icon: 'bi-x-circle'},
+}[status.value ?? ''] ?? null %}
+{% if badge %}
+  <span class="badge {{ badge.class }}"><i class="bi {{ badge.icon }} me-1"></i>{{ status.label }}</span>
+{% else %}
+  <span class="badge bg-secondary">Inconnu</span>
+{% endif %}

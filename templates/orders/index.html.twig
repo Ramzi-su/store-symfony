@@ -39,13 +39,7 @@
                 <td>{{ order.id }}</td>
                 <td>${{ order.total|number_format(2, '.', ',') }}</td>
                 <td>
-                  {% if order.status == 'paid' %}
-                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Payée</span>
-                  {% elseif order.status == 'pending' %}
-                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>En attente</span>
-                  {% else %}
-                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Annulée</span>
-                  {% endif %}
+                  {{ include('orders/_status_badge.html.twig', {status: order.status}) }}
                 </td>
                 <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</td>
                 <td>

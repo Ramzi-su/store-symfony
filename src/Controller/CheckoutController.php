@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Orders;
 use App\Entity\OrderItems;
+use App\Enum\OrderStatus;
 use App\Repository\CartItemRepository;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -91,7 +92,7 @@ class CheckoutController extends AbstractController
 
         $order = new Orders();
         $order->setUser($this->getUser());
-        $order->setStatus('pending');
+        $order->setStatus(OrderStatus::Pending);
         $order->setTotal($total);
         $order->setSubtotal($subtotal);
         $order->setTax($tax);
@@ -297,8 +298,9 @@ class CheckoutController extends AbstractController
         $orderId = $this->session->get('order_id');
         if ($orderId) {
             $order = $this->em->getRepository(Orders::class)->find($orderId);
-            if ($order) {
-                $order->setStatus('cancelled');
+            // Never cancel an order that was paid meanwhile (e.g. confirmed by the webhook).
+            if ($order && $order->getStatus()?->isCancellable()) {
+                $order->setStatus(OrderStatus::Cancelled);
                 $this->em->flush();
             }
             $this->session->remove('order_id');
@@ -318,8 +320,8 @@ class CheckoutController extends AbstractController
     // Idempotent: the webhook and the success page may both report the same payment.
     private function markOrderPaid(Orders $order): void
     {
-        if ($order->getStatus() !== 'paid') {
-            $order->setStatus('paid');
+        if ($order->getStatus() !== OrderStatus::Paid) {
+            $order->setStatus(OrderStatus::Paid);
             $this->em->flush();
         }
     }

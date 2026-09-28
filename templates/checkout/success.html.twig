@@ -49,7 +49,7 @@
                   <h5>Order Summary</h5>
                   <ul class="list-unstyled mb-0">
                     <li><strong>Order Date:</strong> {{ order.createdAt|date('F d, Y') }}</li>
-                    <li><strong>Order Status:</strong> <span class="badge bg-success">{{ order.status|capitalize }}</span></li>
+                    <li><strong>Order Status:</strong> <span class="badge bg-success">{{ order.status.label }}</span></li>
                     <li><strong>Payment Method:</strong> Credit Card</li>
                   </ul>
                 </div>

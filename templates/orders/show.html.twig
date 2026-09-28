@@ -34,17 +34,7 @@
               <tr>
                 <th scope="row">Statut</th>
                 <td>
-                  {% if order.status == 'paid' %}
-                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Payée</span>
-                  {% elseif order.status == 'pending' %}
-                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>En attente</span>
-                  {% elseif order.status == 'cancelled' %}
-                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Annulée</span>
-                  {% elseif order.status == 'shipped' %}
-                    <span class="badge bg-info"><i class="bi bi-truck me-1"></i>Expédiée</span>
-                  {% else %}
-                    <span class="badge bg-secondary">Inconnu</span>
-                  {% endif %}
+                  {{ include('orders/_status_badge.html.twig', {status: order.status}) }}
                 </td>
               </tr>
               <tr>
