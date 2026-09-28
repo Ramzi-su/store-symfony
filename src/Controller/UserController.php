@@ -39,6 +39,8 @@ class UserController extends AbstractController
                 $user->setPassword($hashedPassword);
             }
             $user->setCreatedAt(new \DateTimeImmutable());
+            // Accounts created by an admin are trusted: without this, the UserChecker would block their login.
+            $user->setIsVerified(true);
             $entityManager->persist($user);
             $entityManager->flush();
 

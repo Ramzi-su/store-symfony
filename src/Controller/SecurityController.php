@@ -57,7 +57,7 @@ class SecurityController extends AbstractController
                 )
             );
 
-            $verificationCode = mt_rand(100000, 999999);
+            $verificationCode = random_int(100000, 999999);
             $user->setVerificationCode($verificationCode);
             $user->setIsVerified(false);
             $user->setCreatedAt(new \DateTimeImmutable());

@@ -11,20 +11,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\TwilioService;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 class VerifyAccountController extends AbstractController
 {
     #[Route('/verify', name: 'app_verify_account')]
-    public function verify(Request $request, UserRepository $userRepository, EntityManagerInterface $em): Response
-    {
-        $session = $request->getSession();
-        $attempts = $session->get('verify_attempts', 0);
-
-        if ($attempts >= 5) {
-            $this->addFlash('danger', 'Trop de tentatives. Veuillez réessayer plus tard.');
-            return $this->redirectToRoute('app_login');
-        }
-
+    public function verify(
+        Request $request,
+        UserRepository $userRepository,
+        EntityManagerInterface $em,
+        RateLimiterFactory $verificationCodeCheckLimiter
+    ): Response {
         $form = $this->createForm(VerifyCodeType::class, [
             'email' => $request->query->get('email')
         ]);
@@ -32,6 +29,15 @@ class VerifyAccountController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
+
+            // Limited per email (server-side), not per session: deleting the
+            // session cookie no longer resets the attempt counter.
+            $limiter = $verificationCodeCheckLimiter->create(mb_strtolower((string) $data['email']));
+            if (!$limiter->consume()->isAccepted()) {
+                $this->addFlash('danger', 'Trop de tentatives. Veuillez réessayer plus tard.');
+                return $this->redirectToRoute('app_login');
+            }
+
             $user = $userRepository->findOneBy(['email' => $data['email']]);
 
             if (!$user) {
@@ -39,16 +45,18 @@ class VerifyAccountController extends AbstractController
             } elseif ($user->getIsVerified()) {
                 $this->addFlash('info', 'Ce compte est déjà vérifié.');
                 return $this->redirectToRoute('app_login');
-            } elseif ((string)$user->getVerificationCode() === (string)$data['code']) {
+            } elseif (
+                $user->getVerificationCode() !== null
+                && hash_equals((string) $user->getVerificationCode(), (string) $data['code'])
+            ) {
                 $user->setIsVerified(true);
                 $user->setVerificationCode(null);
                 $em->flush();
-                $session->remove('verify_attempts');
+                $limiter->reset();
 
                 $this->addFlash('success', 'Votre compte a été vérifié avec succès !');
                 return $this->redirectToRoute('app_login');
             } else {
-                $session->set('verify_attempts', $attempts + 1);
                 $this->addFlash('danger', 'Code de vérification incorrect.');
             }
         }
@@ -58,10 +66,27 @@ class VerifyAccountController extends AbstractController
         ]);
     }
 
-    #[Route('/verify/resend', name: 'app_resend_code')]
-    public function resend(Request $request, UserRepository $userRepository, EntityManagerInterface $em, TwilioService $twilio): Response
-    {
-        $email = $request->query->get('email');
+    // POST + CSRF token: a link or an <img> on another site can no longer trigger SMS sends.
+    #[Route('/verify/resend', name: 'app_resend_code', methods: ['POST'])]
+    public function resend(
+        Request $request,
+        UserRepository $userRepository,
+        EntityManagerInterface $em,
+        TwilioService $twilio,
+        RateLimiterFactory $verificationCodeSendLimiter
+    ): Response {
+        $email = (string) $request->request->get('email');
+
+        if (!$this->isCsrfTokenValid('resend-code', (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_verify_account', ['email' => $email]);
+        }
+
+        if (!$verificationCodeSendLimiter->create(mb_strtolower($email))->consume()->isAccepted()) {
+            $this->addFlash('danger', 'Trop de codes envoyés. Veuillez réessayer plus tard.');
+            return $this->redirectToRoute('app_verify_account', ['email' => $email]);
+        }
+
         $user = $userRepository->findOneBy(['email' => $email]);
 
         if (!$user) {
@@ -70,7 +95,8 @@ class VerifyAccountController extends AbstractController
             $this->addFlash('info', 'Ce compte est déjà vérifié.');
             return $this->redirectToRoute('app_login');
         } else {
-            $code = mt_rand(100000, 999999);
+            // random_int() uses a cryptographically secure generator; mt_rand() is predictable.
+            $code = random_int(100000, 999999);
             $user->setVerificationCode($code);
             $em->flush();
 

@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -61,7 +62,7 @@ class ApiRegisterController extends AbstractController
         $user->setPhoneNumber($phoneNumber);
         $user->setCreatedAt(new \DateTimeImmutable());
         $user->setIsVerified(false);
-        $user->setVerificationCode(mt_rand(100000, 999999));
+        $user->setVerificationCode(random_int(100000, 999999));
 
         $hashedPassword = $passwordHasher->hashPassword($user, $password);
         $user->setPassword($hashedPassword);
@@ -82,16 +83,27 @@ class ApiRegisterController extends AbstractController
     }
 
     #[Route('/api/verify', name: 'api_verify', methods: ['POST'])]
-    public function verifyCode(Request $request): JsonResponse
+    public function verifyCode(Request $request, RateLimiterFactory $verificationCodeCheckLimiter): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
-        if (empty($data['email']) || empty($data['code'])) {
+        if (!is_array($data) || empty($data['email']) || empty($data['code'])) {
             return new JsonResponse(['error' => 'Email and code are required.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $email = trim($data['email']);
-        $code = trim($data['code']);
+        $email = trim((string) $data['email']);
+        $code = trim((string) $data['code']);
+
+        // Same limiter as the web form: the counter is shared per email across both entry points.
+        $limiter = $verificationCodeCheckLimiter->create(mb_strtolower($email));
+        $limit = $limiter->consume();
+        if (!$limit->isAccepted()) {
+            return new JsonResponse(
+                ['error' => 'Too many attempts. Try again later.'],
+                Response::HTTP_TOO_MANY_REQUESTS,
+                ['Retry-After' => $limit->getRetryAfter()->getTimestamp() - time()]
+            );
+        }
 
         /** @var User|null $user */
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
@@ -104,13 +116,15 @@ class ApiRegisterController extends AbstractController
             return new JsonResponse(['message' => 'User is already verified.'], Response::HTTP_OK);
         }
 
-        if ((string)$user->getVerificationCode() !== (string)$code) {
+        // hash_equals() compares in constant time, so response timing reveals nothing about the code.
+        if ($user->getVerificationCode() === null || !hash_equals((string) $user->getVerificationCode(), $code)) {
             return new JsonResponse(['error' => 'Invalid verification code.'], Response::HTTP_UNAUTHORIZED);
         }
 
         $user->setIsVerified(true);
-        $user->setVerificationCode(null); // optionnel
+        $user->setVerificationCode(null);
         $this->entityManager->flush();
+        $limiter->reset();
 
         return new JsonResponse(['success' => 'User verified successfully.'], Response::HTTP_OK);
     }
