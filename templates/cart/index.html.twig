@@ -122,7 +122,7 @@
                           </div>
                           <div class="product-details">
                             <h6 class="mb-0">
-                              <a href="{{ path('app_product_show', {'id': item.product.id}) }}" class="text-decoration-none text-dark">{{ item.product.name }}</a>
+                              <a href="{{ path('app_single_product', {'slug': item.product.slug}) }}" class="text-decoration-none text-dark">{{ item.product.name }}</a>
                             </h6>
                             {% if item.color %}
                               <p class="text-muted small mb-0">Color: {{ item.color }}</p>
