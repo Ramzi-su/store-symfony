@@ -14,7 +14,7 @@
   <section class="padding-large">
     <div class="container">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Toutes les commandes</h2>
+        <h2 class="mb-0">{{ is_granted('ROLE_ADMIN') ? 'Toutes les commandes' : 'Mes commandes' }}</h2>
         {% if is_granted('ROLE_ADMIN') %}
         <a href="{{ path('app_orders_new') }}" class="btn btn-success">
           <i class="bi bi-plus-circle me-1"></i> Nouvelle commande
@@ -53,6 +53,10 @@
                       <i class="bi bi-pencil-fill me-1"></i> Modifier
                     </a>
                   </div>
+                  {% else %}
+                    <a href="{{ path('app_account_order_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye-fill me-1"></i> Détails
+                    </a>
                   {% endif %}
                 </td>
               </tr>

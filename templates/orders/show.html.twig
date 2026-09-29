@@ -46,10 +46,12 @@
         </div>
 
         <div class="card-footer d-flex justify-content-between">
-          <a href="{{ path('app_orders_index') }}" class="btn btn-outline-secondary">
+          {# Shared by the admin (/orders/{id}) and the customer (/account/orders/{id}) pages #}
+          <a href="{{ is_granted('ROLE_ADMIN') ? path('app_orders_index') : path('app_orders') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left-circle me-1"></i> Retour à la liste
           </a>
 
+          {% if is_granted('ROLE_ADMIN') %}
           <div>
             <a href="{{ path('app_orders_edit', {'id': order.id}) }}" class="btn btn-outline-primary me-2">
               <i class="bi bi-pencil-square me-1"></i> Modifier
@@ -57,6 +59,7 @@
 
             {{ include('orders/_delete_form.html.twig') }}
           </div>
+          {% endif %}
         </div>
       </div>
     </div>
