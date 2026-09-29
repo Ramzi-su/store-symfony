@@ -1,83 +1,96 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ product.name }} - Ministore{% endblock %}
+{% block title %}{{ product.name }} - MiniStore{% endblock %}
+{% block meta_description %}{{ product.name }} : {{ product.description|length > 150 ? product.description|slice(0, 150) ~ '…' : product.description }}{% endblock %}
 
 {% block body %}
   {% include 'partials/svg_icons.html.twig' %}
   {% include 'partials/header.html.twig' %}
 
   {% include 'partials/breadcrumb.html.twig' with {
-    'page_title': product.name,
-    'parent_page': 'Shop',
-    'parent_route': 'app_shop'
+    page_title: product.name,
+    parent_page: 'Boutique',
+    parent_route: 'app_shop',
+    show_title: false,
   } %}
 
-  <section class="single-product-section padding-large">
-    <div class="container">
-      {% for type, alertClass in {'success': 'success', 'warning': 'warning', 'error': 'danger'} %}
-        {% for message in app.flashes(type) %}
-          <div class="alert alert-{{ alertClass }}" role="alert">{{ message }}</div>
-        {% endfor %}
+  {% set low_stock_threshold = 3 %}
+
+  <main class="container ms-product">
+    {% for type, alertClass in {'success': 'success', 'warning': 'warning', 'error': 'danger'} %}
+      {% for message in app.flashes(type) %}
+        <div class="alert alert-{{ alertClass }}" role="alert">{{ message }}</div>
       {% endfor %}
+    {% endfor %}
 
-      <div class="row">
-        <div class="col-md-6">
-          <div class="product-images">
-            <div class="main-image-container mb-3 position-relative">
-              {% if product.isIsSale %}
-                <div class="card-badge bg-primary text-white position-absolute top-0 start-0 m-2 py-1 px-2">Sale</div>
-              {% endif %}
-              {% if product.image %}
-                <img src="{{ asset(product.image) }}" alt="{{ product.name }}" class="img-fluid main-image">
-              {% endif %}
-            </div>
-          </div>
+    <div class="ms-product__grid">
+      <div class="ms-product__media">
+        {% if product.image %}
+          <img src="{{ asset(product.image) }}" alt="{{ product.name }}" width="800" height="800" fetchpriority="high">
+        {% endif %}
+        {% if product.isIsSale %}<span class="ms-tile__badge">Promo</span>{% endif %}
+      </div>
+
+      <div class="ms-product__info">
+        <a class="ms-product__category" href="{{ path('app_shop', {category: product.category}) }}">{{ product.category|category_label }}</a>
+        <h1 class="product-title">{{ product.name }}</h1>
+
+        <div class="product-price ms-product__price ms-price">{{ product.price|money }}</div>
+
+        <div class="product-actions">
+          {% if product.stock > 0 %}
+            {% if product.stock <= low_stock_threshold %}
+              <p class="ms-stock ms-stock--low">Plus que {{ product.stock }} en stock</p>
+            {% else %}
+              <p class="ms-stock">{{ product.stock }} en stock</p>
+            {% endif %}
+            <form action="{{ path('app_cart_add', {'id': product.id}) }}" method="post" class="add-to-cart-form ms-buy">
+              <input type="hidden" name="_token" value="{{ csrf_token('cart') }}">
+              <label class="ms-buy__qty">
+                Quantité
+                <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ min(product.stock, 99) }}" class="form-control">
+              </label>
+              <button type="submit" class="btn btn-primary btn-lg">Ajouter au panier</button>
+            </form>
+          {% else %}
+            <p class="ms-stock ms-stock--out">Épuisé</p>
+            <button type="button" class="btn btn-lg ms-tile__cta" disabled>Indisponible</button>
+          {% endif %}
         </div>
-        <div class="col-md-6">
-          <div class="product-info mt-4 mt-md-0">
-            <h2 class="product-title mb-3">{{ product.name }}</h2>
 
-            <div class="product-price mb-3">
-              <span class="price h4">{{ product.price|money }}</span>
-            </div>
-
-            <div class="product-description mb-4">
-              {# Escaped by Twig first, then line breaks become <br>: no HTML from the database is trusted. #}
-              <p>{{ product.description|nl2br }}</p>
-            </div>
-
-            <div class="product-actions mb-4">
-              {% if product.stock > 0 %}
-                <form action="{{ path('app_cart_add', {'id': product.id}) }}" method="post" class="add-to-cart-form">
-                  <input type="hidden" name="_token" value="{{ csrf_token('cart') }}">
-                  <div class="quantity-selector d-flex align-items-center mb-3">
-                    <label for="quantity" class="h6 me-3 mb-0">Quantity:</label>
-                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ min(product.stock, 99) }}"
-                           class="form-control form-control-sm text-center" style="width: 70px;">
-                    <span class="ms-3 text-muted">{{ product.stock }} in stock</span>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Add to Cart</button>
-                </form>
-              {% else %}
-                <p class="text-danger fw-bold mb-3">Out of stock</p>
-                <button type="button" class="btn btn-primary" disabled>Add to Cart</button>
-              {% endif %}
-            </div>
-
-            <div class="product-meta">
-              <div class="categories mb-2">
-                <span class="fw-bold">Category:</span>
-                <a href="{{ path('app_shop', {'category': product.category}) }}" class="text-decoration-none">{{ product.category|capitalize }}</a>
-              </div>
-            </div>
-          </div>
+        <div class="ms-product__description">
+          {# Escaped by Twig first, then line breaks become <br>: no HTML from the database is trusted. #}
+          <p>{{ product.description|nl2br }}</p>
         </div>
+
+        <ul class="ms-product__facts">
+          <li>
+            <svg class="ms-icon" aria-hidden="true"><use href="#truck"></use></svg>
+            Livraison {{ constant('App\\Cart\\CartTotals::SHIPPING_COST')|money }} par commande
+          </li>
+          <li>
+            <svg class="ms-icon" aria-hidden="true"><use href="#lock"></use></svg>
+            Paiement sécurisé par Stripe
+          </li>
+        </ul>
       </div>
     </div>
-  </section>
+  </main>
 
   {% if related_products is not empty %}
-    {% include 'partials/related_products.html.twig' with {'related_products': related_products} %}
+    <section class="related-products ms-section" aria-labelledby="related-title">
+      <div class="container">
+        <div class="ms-section__head">
+          <h2 id="related-title">Dans la même catégorie</h2>
+        </div>
+        <div class="ms-grid">
+          {% for related in related_products %}
+            {% include 'partials/product_card.html.twig' with {product: related} %}
+          {% endfor %}
+        </div>
+      </div>
+    </section>
   {% endif %}
+
   {% include 'partials/footer.html.twig' %}
 {% endblock %}

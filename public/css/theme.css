@@ -622,3 +622,41 @@ a:hover { color: var(--ms-teal); }
   .ms-filters[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
   .ms-filters[open] summary { margin-bottom: var(--ms-space-3); }
 }
+
+/* ---------------------------------------------------------------------------
+   10. Product page
+   ------------------------------------------------------------------------- */
+.ms-page-title--trail { padding: var(--ms-space-3) 0; border-bottom: 0; }
+.ms-product { padding-top: var(--ms-space-3); }
+.ms-product__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--ms-space-5);
+  align-items: start;
+}
+.ms-product__media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--ms-aluminium);
+  border-radius: calc(var(--ms-radius) * 2);
+  overflow: hidden;
+}
+.ms-product__media img { width: 100%; height: 100%; object-fit: cover; }
+.ms-product__category { font-weight: 600; color: var(--ms-slate); }
+.ms-product__category:hover { color: var(--ms-teal); }
+.ms-product__info h1 { margin: var(--ms-space-2) 0 var(--ms-space-3); }
+.ms-product__price { font-size: var(--ms-text-2xl); font-weight: 800; margin-bottom: var(--ms-space-3); }
+.product-actions { padding: var(--ms-space-4) 0; border-top: 1px solid var(--ms-line); border-bottom: 1px solid var(--ms-line); }
+.product-actions .ms-stock { margin: 0 0 var(--ms-space-3); }
+.ms-buy { display: flex; align-items: flex-end; gap: var(--ms-space-3); }
+.ms-buy__qty { display: flex; flex-direction: column; gap: 4px; margin: 0; font-size: var(--ms-text-sm); color: var(--ms-slate); }
+.ms-buy__qty input { width: 88px; height: 48px; text-align: center; font-weight: 700; }
+.ms-buy .btn { flex: 1; height: 48px; }
+.ms-product__description { padding-top: var(--ms-space-4); }
+.ms-product__facts { list-style: none; padding: 0; margin: var(--ms-space-3) 0 0; display: grid; gap: var(--ms-space-2); color: var(--ms-slate); font-size: var(--ms-text-sm); }
+.ms-product__facts li { display: flex; align-items: center; gap: var(--ms-space-2); }
+.ms-product__facts .ms-icon { width: 18px; height: 18px; color: var(--ms-teal); }
+
+@media (max-width: 767.98px) {
+  .ms-product__grid { grid-template-columns: 1fr; gap: var(--ms-space-4); }
+}

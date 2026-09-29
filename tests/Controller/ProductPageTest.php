@@ -15,9 +15,9 @@ class ProductPageTest extends DatabaseWebTestCase
         $this->client->request('GET', '/product/test-phone');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('h2.product-title', 'Test Phone');
+        $this->assertSelectorTextContains('h1.product-title', 'Test Phone');
         $this->assertSelectorTextContains('.product-price', "19,99\u{00A0}$");
-        $this->assertSelectorTextContains('.product-actions', '10 in stock');
+        $this->assertSelectorTextContains('.product-actions', '10 en stock');
     }
 
     public function testUnknownProductReturns404(): void
@@ -50,7 +50,7 @@ class ProductPageTest extends DatabaseWebTestCase
         $this->client->request('GET', '/product/test-phone');
 
         $this->assertSelectorNotExists('.add-to-cart-form');
-        $this->assertSelectorTextContains('.product-actions', 'Out of stock');
+        $this->assertSelectorTextContains('.product-actions', 'Épuisé');
     }
 
     public function testRelatedProductsComeFromTheSameCategoryOnly(): void

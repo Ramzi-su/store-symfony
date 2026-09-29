@@ -1,6 +1,7 @@
 {# Page title with its breadcrumb trail.
-   Parameters: page_title (required), parent_page + parent_route (optional). #}
-<section class="ms-page-title">
+   Parameters: page_title (required), parent_page + parent_route (optional),
+   show_title (default true: false when the page renders its own <h1>). #}
+<section class="ms-page-title{{ (show_title ?? true) ? '' : ' ms-page-title--trail' }}">
   <div class="container">
     <nav aria-label="Fil d’Ariane">
       <ol class="ms-breadcrumb">
@@ -11,6 +12,6 @@
         <li aria-current="page">{{ page_title }}</li>
       </ol>
     </nav>
-    <h1>{{ page_title }}</h1>
+    {% if show_title ?? true %}<h1>{{ page_title }}</h1>{% endif %}
   </div>
 </section>
