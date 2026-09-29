@@ -19,8 +19,9 @@ final class SingleProductController extends AbstractController
             throw $this->createNotFoundException('Produit non trouvé.');
         }
 
-        return $this->render('single_product/single_product.html.twig', [
+        return $this->render('single-product/single-product.html.twig', [
             'product' => $product,
+            'related_products' => $productRepository->findRelated($product),
         ]);
     }
 }

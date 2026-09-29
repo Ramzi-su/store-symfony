@@ -16,6 +16,24 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
+    /**
+     * Other products of the same category, newest first.
+     *
+     * @return list<Product>
+     */
+    public function findRelated(Product $product, int $limit = 4): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.category = :category')
+            ->andWhere('p.id != :id')
+            ->setParameter('category', $product->getCategory())
+            ->setParameter('id', $product->getId())
+            ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Product[] Returns an array of Product objects
     //     */
