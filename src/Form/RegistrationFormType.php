@@ -30,9 +30,7 @@ class RegistrationFormType extends AbstractType
                     'placeholder' => 'Enter your first name'
                 ],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please enter your first name',
-                    ]),
+                    new NotBlank(message: 'Please enter your first name'),
                 ]
             ])
             ->add('lastName', TextType::class, [
@@ -42,9 +40,7 @@ class RegistrationFormType extends AbstractType
                     'placeholder' => 'Enter your last name'
                 ],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please enter your last name',
-                    ]),
+                    new NotBlank(message: 'Please enter your last name'),
                 ]
             ])
             ->add('email', EmailType::class, [
@@ -54,12 +50,8 @@ class RegistrationFormType extends AbstractType
                     'placeholder' => 'Enter your email'
                 ],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please enter your email',
-                    ]),
-                    new Email([
-                        'message' => 'Please enter a valid email address',
-                    ]),
+                    new NotBlank(message: 'Please enter your email'),
+                    new Email(message: 'Please enter a valid email address'),
                 ]
             ])
             ->add('phoneNumber', TelType::class, [
@@ -69,13 +61,11 @@ class RegistrationFormType extends AbstractType
                     'placeholder' => '+1234567890'
                 ],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please enter your phone number',
-                    ]),
-                    new Regex([
-                        'pattern' => '/^\+[1-9]\d{1,14}$/',
-                        'message' => 'Please enter a valid phone number in international format (e.g., +1234567890)',
-                    ]),
+                    new NotBlank(message: 'Please enter your phone number'),
+                    new Regex(
+                        pattern: '/^\+[1-9]\d{1,14}$/',
+                        message: 'Please enter a valid phone number in international format (e.g., +1234567890)',
+                    ),
                 ]
             ])
             ->add('plainPassword', RepeatedType::class, [
@@ -97,23 +87,19 @@ class RegistrationFormType extends AbstractType
                 ],
                 'invalid_message' => 'The password fields must match.',
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please enter a password',
-                    ]),
-                    new Length([
-                        'min' => 8,
-                        'minMessage' => 'Your password should be at least {{ limit }} characters',
-                        'max' => 4096,
-                    ]),
+                    new NotBlank(message: 'Please enter a password'),
+                    new Length(
+                        min: 8,
+                        max: 4096,
+                        minMessage: 'Your password should be at least {{ limit }} characters',
+                    ),
                 ],
             ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'label' => 'I agree to the terms and conditions',
                 'constraints' => [
-                    new IsTrue([
-                        'message' => 'You should agree to our terms.',
-                    ]),
+                    new IsTrue(message: 'You should agree to our terms.'),
                 ],
                 'attr' => [
                     'class' => 'form-check-input',
