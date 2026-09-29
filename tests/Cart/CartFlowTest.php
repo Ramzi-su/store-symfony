@@ -4,10 +4,9 @@ namespace App\Tests\Cart;
 
 use App\Entity\Product;
 use App\Tests\DatabaseWebTestCase;
+use PHPUnit\Framework\Attributes\Group;
 
-/**
- * @group database
- */
+#[Group('database')]
 class CartFlowTest extends DatabaseWebTestCase
 {
     private Product $product;

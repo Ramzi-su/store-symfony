@@ -3,13 +3,12 @@
 namespace App\Tests\Twig;
 
 use App\Twig\MoneyExtension;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class MoneyExtensionTest extends TestCase
 {
-    /**
-     * @dataProvider amounts
-     */
+    #[DataProvider('amounts')]
     public function testFormatsCentsAsDollars(?int $cents, string $expected): void
     {
         $this->assertSame($expected, (new MoneyExtension())->formatMoney($cents));

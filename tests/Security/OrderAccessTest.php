@@ -6,10 +6,9 @@ use App\Entity\Orders;
 use App\Entity\User;
 use App\Enum\OrderStatus;
 use App\Tests\DatabaseWebTestCase;
+use PHPUnit\Framework\Attributes\Group;
 
-/**
- * @group database
- */
+#[Group('database')]
 class OrderAccessTest extends DatabaseWebTestCase
 {
     private User $owner;

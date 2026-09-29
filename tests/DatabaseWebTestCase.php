@@ -6,6 +6,7 @@ use App\Entity\Product;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -13,9 +14,8 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  * Base class for functional tests that need a database: the schema of the
  * test database (suffixed "_test" by config/packages/doctrine.yaml) is
  * dropped and recreated before each test.
- *
- * @group database
  */
+#[Group('database')]
 abstract class DatabaseWebTestCase extends WebTestCase
 {
     protected KernelBrowser $client;

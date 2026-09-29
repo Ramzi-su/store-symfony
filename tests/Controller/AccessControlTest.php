@@ -2,13 +2,12 @@
 
 namespace App\Tests\Controller;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class AccessControlTest extends WebTestCase
 {
-    /**
-     * @dataProvider adminOnlyUrls
-     */
+    #[DataProvider('adminOnlyUrls')]
     public function testAnonymousVisitorIsRedirectedToLogin(string $url): void
     {
         $client = static::createClient();
