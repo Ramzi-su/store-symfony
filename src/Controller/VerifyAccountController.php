@@ -9,9 +9,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use App\Service\TwilioService;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 class VerifyAccountController extends AbstractController
 {
@@ -20,7 +20,7 @@ class VerifyAccountController extends AbstractController
         Request $request,
         UserRepository $userRepository,
         EntityManagerInterface $em,
-        RateLimiterFactory $verificationCodeCheckLimiter
+        RateLimiterFactoryInterface $verificationCodeCheckLimiter
     ): Response {
         $form = $this->createForm(VerifyCodeType::class, [
             'email' => $request->query->get('email')
@@ -73,7 +73,7 @@ class VerifyAccountController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $em,
         TwilioService $twilio,
-        RateLimiterFactory $verificationCodeSendLimiter
+        RateLimiterFactoryInterface $verificationCodeSendLimiter
     ): Response {
         $email = (string) $request->request->get('email');
 

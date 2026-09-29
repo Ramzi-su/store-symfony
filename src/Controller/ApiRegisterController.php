@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -30,7 +30,7 @@ class ApiRegisterController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         ValidatorInterface $validator,
         TwilioService $twilioService,
-        RateLimiterFactory $registrationLimiter
+        RateLimiterFactoryInterface $registrationLimiter
     ): JsonResponse {
         // Each registration sends a paid SMS: limit per client IP.
         if (!$registrationLimiter->create($request->getClientIp())->consume()->isAccepted()) {
@@ -105,7 +105,7 @@ class ApiRegisterController extends AbstractController
     }
 
     #[Route('/api/verify', name: 'api_verify', methods: ['POST'])]
-    public function verifyCode(Request $request, RateLimiterFactory $verificationCodeCheckLimiter): JsonResponse
+    public function verifyCode(Request $request, RateLimiterFactoryInterface $verificationCodeCheckLimiter): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
