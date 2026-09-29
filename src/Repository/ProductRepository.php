@@ -2,8 +2,10 @@
 
 namespace App\Repository;
 
+use App\Catalog\ProductFilters;
 use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use SortDirection;
 
@@ -18,26 +20,42 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
-     * Products of a category and/or whose name contains $query, newest first.
-     *
-     * @return list<Product>
+     * Shop query for the given filters (not executed: the controller paginates it).
      */
-    public function search(?string $category, ?string $query): array
+    public function createCatalogQuery(ProductFilters $filters): QueryBuilder
     {
-        $qb = $this->createQueryBuilder('p')->orderBy('p.createdAt', SortDirection::Descending);
+        $qb = $this->createQueryBuilder('p');
 
-        if ($category) {
-            $qb->andWhere('p.category = :category')->setParameter('category', $category);
+        if ($filters->category !== null) {
+            $qb->andWhere('p.category = :category')->setParameter('category', $filters->category);
         }
 
-        $query = trim((string) $query);
-        if ($query !== '') {
+        if ($filters->query !== '') {
             // Bound parameter (no SQL injection); % and _ typed by the visitor are matched literally.
             $qb->andWhere('LOWER(p.name) LIKE :query')
-                ->setParameter('query', '%' . addcslashes(mb_strtolower($query), '%_\\') . '%');
+                ->setParameter('query', '%' . addcslashes(mb_strtolower($filters->query), '%_\\') . '%');
         }
 
-        return $qb->getQuery()->getResult();
+        if ($filters->minPriceCents !== null) {
+            $qb->andWhere('p.price >= :min')->setParameter('min', $filters->minPriceCents);
+        }
+        if ($filters->maxPriceCents !== null) {
+            $qb->andWhere('p.price <= :max')->setParameter('max', $filters->maxPriceCents);
+        }
+
+        if ($filters->inStockOnly) {
+            $qb->andWhere('p.stock > 0');
+        }
+
+        match ($filters->sort) {
+            'prix-asc' => $qb->orderBy('p.price', SortDirection::Ascending),
+            'prix-desc' => $qb->orderBy('p.price', SortDirection::Descending),
+            default => $qb->orderBy('p.createdAt', SortDirection::Descending),
+        };
+        // Stable order between pages when several products share a price or a date.
+        $qb->addOrderBy('p.id', SortDirection::Descending);
+
+        return $qb;
     }
 
     /**
