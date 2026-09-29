@@ -51,21 +51,34 @@ class StockReservation
     }
 
     /**
-     * Cancels a pending order and puts its items back in stock.
-     *
-     * The status change is itself a guarded UPDATE: if the cancel page and the
-     * "session expired" webhook arrive together, only one of them releases the stock.
+     * Cancels a pending order and puts its items back in stock (customer cancel,
+     * Stripe failure or expired session).
      *
      * @return bool false when the order was not pending anymore (paid or already cancelled)
      */
     public function cancel(Orders $order): bool
     {
-        return $this->em->wrapInTransaction(function () use ($order): bool {
+        return $this->cancelFrom($order, OrderStatus::Pending);
+    }
+
+    /**
+     * Moves an order from $from to "cancelled" and, when $restock is true, puts its
+     * items back in stock.
+     *
+     * The status change is itself a guarded UPDATE (WHERE status = $from): if two
+     * cancellations race (cancel page + "session expired" webhook, double click in
+     * the admin), only one of them releases the stock.
+     *
+     * @return bool false when the order was not in the $from status anymore
+     */
+    public function cancelFrom(Orders $order, OrderStatus $from, bool $restock = true): bool
+    {
+        return $this->em->wrapInTransaction(function () use ($order, $from, $restock): bool {
             $cancelled = $this->em->createQuery(
-                'UPDATE App\Entity\Orders o SET o.status = :cancelled WHERE o.id = :id AND o.status = :pending'
+                'UPDATE App\Entity\Orders o SET o.status = :cancelled WHERE o.id = :id AND o.status = :from'
             )
                 ->setParameter('cancelled', OrderStatus::Cancelled->value)
-                ->setParameter('pending', OrderStatus::Pending->value)
+                ->setParameter('from', $from->value)
                 ->setParameter('id', $order->getId())
                 ->execute();
 
@@ -73,11 +86,13 @@ class StockReservation
                 return false;
             }
 
-            foreach ($order->getItems() as $item) {
-                $this->em->createQuery('UPDATE App\Entity\Product p SET p.stock = p.stock + :quantity WHERE p.id = :id')
-                    ->setParameter('quantity', $item->getQuantity())
-                    ->setParameter('id', $item->getProduct()->getId())
-                    ->execute();
+            if ($restock) {
+                foreach ($order->getItems() as $item) {
+                    $this->em->createQuery('UPDATE App\Entity\Product p SET p.stock = p.stock + :quantity WHERE p.id = :id')
+                        ->setParameter('quantity', $item->getQuantity())
+                        ->setParameter('id', $item->getProduct()->getId())
+                        ->execute();
+                }
             }
 
             $this->em->refresh($order);

@@ -13,6 +13,11 @@
 
   <section class="padding-large">
     <div class="container">
+      {% for type, alertClass in {'success': 'success', 'warning': 'warning', 'error': 'danger'} %}
+        {% for message in app.flashes(type) %}
+          <div class="alert alert-{{ alertClass }}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endfor %}
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">{{ is_granted('ROLE_ADMIN') ? 'Toutes les commandes' : 'Mes commandes' }}</h2>
         {% if is_granted('ROLE_ADMIN') %}
