@@ -7,6 +7,7 @@ use App\Form\AdminUserEditFormType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use SortDirection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +35,7 @@ class AdminController extends AbstractController
         $queryBuilder = $userRepository->createQueryBuilder('u')
             ->where('u.email LIKE :search OR u.firstName LIKE :search OR u.lastName LIKE :search')
             ->setParameter('search', '%' . $search . '%')
-            ->orderBy('u.createdAt', 'DESC');
+            ->orderBy('u.createdAt', SortDirection::Descending);
 
         $pagination = $paginator->paginate(
             $queryBuilder,

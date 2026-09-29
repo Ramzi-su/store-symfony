@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use SortDirection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,7 +39,7 @@ final class ShopController extends AbstractController
         // ✅ Catégories dynamiques
         $categoriesResult = $productRepository->createQueryBuilder('p')
             ->select('DISTINCT p.category AS name')
-            ->orderBy('p.category', 'ASC')
+            ->orderBy('p.category', SortDirection::Ascending)
             ->getQuery()
             ->getArrayResult();
 

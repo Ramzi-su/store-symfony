@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\PostRepository;
 use Knp\Component\Pager\PaginatorInterface;
+use SortDirection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +17,7 @@ final class BlogController extends AbstractController
     {
         // Requête de base pour les articles
         $query = $postRepository->createQueryBuilder('p')
-            ->orderBy('p.createdAt', 'DESC')
+            ->orderBy('p.createdAt', SortDirection::Descending)
             ->getQuery();
 
         // Pagination (6 articles par page)

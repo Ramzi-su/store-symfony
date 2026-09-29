@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SortDirection;
 
 /**
  * @extends ServiceEntityRepository<Product>
@@ -28,7 +29,7 @@ class ProductRepository extends ServiceEntityRepository
             ->andWhere('p.id != :id')
             ->setParameter('category', $product->getCategory())
             ->setParameter('id', $product->getId())
-            ->orderBy('p.createdAt', 'DESC')
+            ->orderBy('p.createdAt', SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
