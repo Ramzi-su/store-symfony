@@ -2,11 +2,10 @@
 
 namespace App\Controller;
 
+use App\Cart\CartService;
 use App\Entity\Orders;
 use App\Entity\OrderItems;
 use App\Enum\OrderStatus;
-use App\Repository\CartItemRepository;
-use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Stripe\Stripe;
@@ -27,23 +26,20 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class CheckoutController extends AbstractController
 {
     private EntityManagerInterface $em;
-    private CartItemRepository $cartRepo;
-    private ProductRepository $productRepo;
+    private CartService $cart;
     private SessionInterface $session;
     private ?string $stripeSecretKey;
     private ?string $stripeWebhookSecret;
 
     public function __construct(
         EntityManagerInterface $em,
-        CartItemRepository $cartRepo,
-        ProductRepository $productRepo,
+        CartService $cart,
         RequestStack $requestStack,
         ?string $stripeSecretKey,
         ?string $stripeWebhookSecret
     ) {
         $this->em = $em;
-        $this->cartRepo = $cartRepo;
-        $this->productRepo = $productRepo;
+        $this->cart = $cart;
         $this->session = $requestStack->getSession();
         $this->stripeSecretKey = $stripeSecretKey;
         $this->stripeWebhookSecret = $stripeWebhookSecret;
@@ -52,19 +48,19 @@ class CheckoutController extends AbstractController
     #[Route('', name: 'app_checkout')]
     public function index(): Response
     {
-        if ($this->isCartEmpty()) {
+        if ($this->cart->isEmpty()) {
             $this->addFlash('error', 'Votre panier est vide.');
             return $this->redirectToRoute('app_cart');
         }
 
-        [$items, $subtotal, $shipping, $tax, $total] = $this->getCartDetails();
+        $totals = $this->cart->getTotals();
 
         return $this->render('checkout/checkout.html.twig', [
-            'cart_items' => $items,
-            'cart_subtotal' => $subtotal,
-            'shipping_cost' => $shipping,
-            'tax' => $tax,
-            'cart_total' => $total,
+            'cart_items' => $this->cart->getLines(),
+            'cart_subtotal' => $totals->subtotal,
+            'shipping_cost' => $totals->shipping,
+            'tax' => $totals->tax,
+            'cart_total' => $totals->total,
         ]);
     }
 
@@ -76,7 +72,7 @@ class CheckoutController extends AbstractController
             return $this->redirectToRoute('app_checkout');
         }
 
-        if ($this->isCartEmpty()) {
+        if ($this->cart->isEmpty()) {
             $this->addFlash('error', 'Votre panier est vide.');
             return $this->redirectToRoute('app_cart');
         }
@@ -88,15 +84,16 @@ class CheckoutController extends AbstractController
             return $this->redirectToRoute('app_checkout');
         }
 
-        [$items, $subtotal, $shipping, $tax, $total] = $this->getCartDetails();
+        $lines = $this->cart->getLines();
+        $totals = $this->cart->getTotals();
 
         $order = new Orders();
         $order->setUser($this->getUser());
         $order->setStatus(OrderStatus::Pending);
-        $order->setTotal($total);
-        $order->setSubtotal($subtotal);
-        $order->setTax($tax);
-        $order->setShippingCost($shipping);
+        $order->setTotal($totals->total);
+        $order->setSubtotal($totals->subtotal);
+        $order->setTax($totals->tax);
+        $order->setShippingCost($totals->shipping);
         $order->setCreatedAt(new \DateTimeImmutable());
 
         // Form field name => entity setter. Values are trimmed strings (null when empty),
@@ -127,14 +124,14 @@ class CheckoutController extends AbstractController
 
         $this->em->persist($order);
 
-        foreach ($items as $item) {
+        foreach ($lines as $line) {
             $orderItem = new OrderItems();
             $orderItem->setOrder($order);
-            $orderItem->setProduct($item['product']);
-            $orderItem->setQuantity($item['quantity']);
-            $orderItem->setPrice($item['product']->getPrice());
-            $orderItem->setColor($item['color'] ?? null);
-            $orderItem->setStorage($item['storage'] ?? null);
+            $orderItem->setProduct($line->product);
+            $orderItem->setQuantity($line->quantity);
+            $orderItem->setPrice($line->product->getPrice());
+            $orderItem->setColor($line->color);
+            $orderItem->setStorage($line->storage);
             $order->addItem($orderItem);
         }
 
@@ -145,39 +142,39 @@ class CheckoutController extends AbstractController
             Stripe::setApiKey($this->stripeSecretKey);
             $lineItems = [];
 
-            foreach ($items as $item) {
+            foreach ($lines as $line) {
                 $lineItems[] = [
                     'price_data' => [
                         'currency' => 'usd',
-                        'unit_amount' => $this->toCents($item['product']->getPrice()),
+                        'unit_amount' => $this->toCents($line->product->getPrice()),
                         'product_data' => [
-                            'name' => $item['product']->getName(),
+                            'name' => $line->product->getName(),
                             // Stripe needs absolute, publicly reachable URLs.
-                            'images' => $item['product']->getImage()
-                                ? [$request->getSchemeAndHttpHost() . '/' . ltrim($item['product']->getImage(), '/')]
+                            'images' => $line->product->getImage()
+                                ? [$request->getSchemeAndHttpHost() . '/' . ltrim($line->product->getImage(), '/')]
                                 : [],
                         ],
                     ],
-                    'quantity' => $item['quantity'],
+                    'quantity' => $line->quantity,
                 ];
             }
 
-            if ($shipping > 0) {
+            if ($totals->shipping > 0) {
                 $lineItems[] = [
                     'price_data' => [
                         'currency' => 'usd',
-                        'unit_amount' => $this->toCents($shipping),
+                        'unit_amount' => $this->toCents($totals->shipping),
                         'product_data' => ['name' => 'Shipping'],
                     ],
                     'quantity' => 1,
                 ];
             }
 
-            if ($tax > 0) {
+            if ($totals->tax > 0) {
                 $lineItems[] = [
                     'price_data' => [
                         'currency' => 'usd',
-                        'unit_amount' => $this->toCents($tax),
+                        'unit_amount' => $this->toCents($totals->tax),
                         'product_data' => ['name' => 'Tax'],
                     ],
                     'quantity' => 1,
@@ -241,14 +238,7 @@ class CheckoutController extends AbstractController
 
         $this->markOrderPaid($order);
 
-        if ($this->getUser()) {
-            foreach ($this->cartRepo->findBy(['user' => $this->getUser()]) as $item) {
-                $this->em->remove($item);
-            }
-            $this->em->flush();
-        } else {
-            $this->session->remove('cart');
-        }
+        $this->cart->clear();
 
         $this->session->remove('order_id');
         $this->session->remove('stripe_session_id');
@@ -330,55 +320,5 @@ class CheckoutController extends AbstractController
     private function toCents(float $amount): int
     {
         return (int) round($amount * 100);
-    }
-
-    private function isCartEmpty(): bool
-    {
-        if ($this->getUser()) {
-            return count($this->cartRepo->findBy(['user' => $this->getUser()])) === 0;
-        }
-        return count($this->session->get('cart', [])) === 0;
-    }
-
-    private function getCartDetails(): array
-    {
-        $items = [];
-        $subtotal = $shipping = $tax = $total = 0.0;
-
-        if ($this->getUser()) {
-            $cartItems = $this->cartRepo->findBy(['user' => $this->getUser()]);
-            foreach ($cartItems as $item) {
-                $subtotal += $item->getProduct()->getPrice() * $item->getQuantity();
-                $items[] = [
-                    'product' => $item->getProduct(),
-                    'quantity' => $item->getQuantity(),
-                    'color' => $item->getColor(),
-                    'storage' => $item->getStorage(),
-                ];
-            }
-        } else {
-            foreach ($this->session->get('cart', []) as $key => $entry) {
-                // Guest cart keys are "productId-color-storage" (see CartController::generateKey()).
-                [$id] = explode('-', (string) $key);
-                $product = $this->productRepo->find((int) $id);
-                if ($product) {
-                    $subtotal += $product->getPrice() * $entry['quantity'];
-                    $items[] = [
-                        'product' => $product,
-                        'quantity' => $entry['quantity'],
-                        'color' => $entry['color'] ?? null,
-                        'storage' => $entry['storage'] ?? null,
-                    ];
-                }
-            }
-        }
-
-        if ($subtotal > 0) {
-            $shipping = 10.0;
-            $tax = $subtotal * 0.1;
-        }
-
-        $total = $subtotal + $shipping + $tax;
-        return [$items, $subtotal, $shipping, $tax, $total];
     }
 }

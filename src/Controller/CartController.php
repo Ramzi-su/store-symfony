@@ -2,93 +2,31 @@
 
 namespace App\Controller;
 
-use App\Entity\CartItem;
+use App\Cart\CartService;
 use App\Entity\Product;
-use App\Repository\CartItemRepository;
-use App\Repository\ProductRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/cart')]
 class CartController extends AbstractController
 {
-    private EntityManagerInterface $em;
-    private CartItemRepository $cartItemRepo;
-    private ProductRepository $productRepo;
-    private SessionInterface $session;
-
-    public function __construct(
-        EntityManagerInterface $em,
-        CartItemRepository $cartItemRepo,
-        ProductRepository $productRepo,
-        RequestStack $requestStack
-    ) {
-        $this->em = $em;
-        $this->cartItemRepo = $cartItemRepo;
-        $this->productRepo = $productRepo;
-        $this->session = $requestStack->getSession();
-    }
-
-    private function generateKey(Product $product, ?string $color, ?string $storage): string
+    public function __construct(private readonly CartService $cart)
     {
-        return $product->getId() . '-' . ($color ?? '') . '-' . ($storage ?? '');
-    }
-
-    private function invalidTokenResponse(Request $request): Response
-    {
-        if ($request->isXmlHttpRequest()) {
-            return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
-        }
-
-        $this->addFlash('error', 'Votre session a expiré, veuillez réessayer.');
-        return $this->redirectToRoute('app_cart');
     }
 
     #[Route('', name: 'app_cart')]
     public function index(): Response
     {
-        $cartItems = [];
-        $subtotal = $shipping = $tax = $total = 0.0;
-
-        if ($this->getUser()) {
-            $cartItems = $this->cartItemRepo->findBy(['user' => $this->getUser()]);
-            foreach ($cartItems as $item) {
-                $subtotal += $item->getProduct()->getPrice() * $item->getQuantity();
-            }
-        } else {
-            foreach ($this->session->get('cart', []) as $key => $item) {
-                [$id] = explode('-', $key);
-                $product = $this->productRepo->find($id);
-                if ($product) {
-                    $cartItems[] = [
-                        'product' => $product,
-                        'quantity' => $item['quantity'],
-                        'color' => $item['color'] ?? null,
-                        'storage' => $item['storage'] ?? null,
-                    ];
-                    $subtotal += $product->getPrice() * $item['quantity'];
-                }
-            }
-        }
-
-        if ($subtotal > 0) {
-            $shipping = 10.0;
-            $tax = $subtotal * 0.1;
-        }
-
-        $total = $subtotal + $shipping + $tax;
+        $totals = $this->cart->getTotals();
 
         return $this->render('cart/index.html.twig', [
-            'cart_items' => $cartItems,
-            'cart_subtotal' => $subtotal,
-            'shipping_cost' => $shipping,
-            'tax' => $tax,
-            'cart_total' => $total
+            'cart_items' => $this->cart->getLines(),
+            'cart_subtotal' => $totals->subtotal,
+            'shipping_cost' => $totals->shipping,
+            'tax' => $totals->tax,
+            'cart_total' => $totals->total,
         ]);
     }
 
@@ -99,39 +37,7 @@ class CartController extends AbstractController
             return $this->invalidTokenResponse($request);
         }
 
-        $quantity = max(1, min(99, (int)$request->request->get('quantity', 1)));
-        $color = $request->request->get('color');
-        $storage = $request->request->get('storage');
-
-        if ($this->getUser()) {
-            $item = $this->cartItemRepo->findOneBy([
-                'user' => $this->getUser(),
-                'product' => $product,
-                'color' => $color,
-                'storage' => $storage
-            ]) ?? new CartItem();
-
-            if ($item->getId()) {
-                $item->setQuantity($item->getQuantity() + $quantity);
-            } else {
-                $item->setUser($this->getUser())
-                     ->setProduct($product)
-                     ->setColor($color)
-                     ->setStorage($storage)
-                     ->setQuantity($quantity);
-                $this->em->persist($item);
-            }
-            $this->em->flush();
-        } else {
-            $key = $this->generateKey($product, $color, $storage);
-            $cart = $this->session->get('cart', []);
-            if (isset($cart[$key])) {
-                $cart[$key]['quantity'] += $quantity;
-            } else {
-                $cart[$key] = ['quantity' => $quantity, 'color' => $color, 'storage' => $storage];
-            }
-            $this->session->set('cart', $cart);
-        }
+        $this->cart->add($product, $request->request->getInt('quantity', 1), ...$this->options($request));
 
         $this->addFlash('success', 'Produit ajouté au panier.');
         return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('app_cart'));
@@ -144,29 +50,7 @@ class CartController extends AbstractController
             return $this->invalidTokenResponse($request);
         }
 
-        $quantity = max(1, min(99, (int)$request->request->get('quantity', 1)));
-        $color = $request->request->get('color');
-        $storage = $request->request->get('storage');
-
-        if ($this->getUser()) {
-            $item = $this->cartItemRepo->findOneBy([
-                'user' => $this->getUser(),
-                'product' => $product,
-                'color' => $color,
-                'storage' => $storage
-            ]);
-            if ($item) {
-                $item->setQuantity($quantity);
-                $this->em->flush();
-            }
-        } else {
-            $key = $this->generateKey($product, $color, $storage);
-            $cart = $this->session->get('cart', []);
-            if (isset($cart[$key])) {
-                $cart[$key]['quantity'] = $quantity;
-                $this->session->set('cart', $cart);
-            }
-        }
+        $this->cart->update($product, $request->request->getInt('quantity', 1), ...$this->options($request));
 
         if ($request->isXmlHttpRequest()) {
             return $this->json(['success' => true]);
@@ -182,26 +66,7 @@ class CartController extends AbstractController
             return $this->invalidTokenResponse($request);
         }
 
-        $color = $request->request->get('color');
-        $storage = $request->request->get('storage');
-
-        if ($this->getUser()) {
-            $item = $this->cartItemRepo->findOneBy([
-                'user' => $this->getUser(),
-                'product' => $product,
-                'color' => $color,
-                'storage' => $storage
-            ]);
-            if ($item) {
-                $this->em->remove($item);
-                $this->em->flush();
-            }
-        } else {
-            $key = $this->generateKey($product, $color, $storage);
-            $cart = $this->session->get('cart', []);
-            unset($cart[$key]);
-            $this->session->set('cart', $cart);
-        }
+        $this->cart->remove($product, ...$this->options($request));
 
         if ($request->isXmlHttpRequest()) {
             return $this->json(['success' => true]);
@@ -217,17 +82,31 @@ class CartController extends AbstractController
             return $this->invalidTokenResponse($request);
         }
 
-        if ($this->getUser()) {
-            $items = $this->cartItemRepo->findBy(['user' => $this->getUser()]);
-            foreach ($items as $item) {
-                $this->em->remove($item);
-            }
-            $this->em->flush();
-        } else {
-            $this->session->remove('cart');
-        }
+        $this->cart->clear();
 
         $this->addFlash('success', 'Panier vidé.');
+        return $this->redirectToRoute('app_cart');
+    }
+
+    /**
+     * Product options posted by the forms; empty strings mean "no option".
+     *
+     * @return array{color: ?string, storage: ?string}
+     */
+    private function options(Request $request): array
+    {
+        $option = fn (string $name): ?string => mb_substr(trim((string) $request->request->get($name, '')), 0, 50) ?: null;
+
+        return ['color' => $option('color'), 'storage' => $option('storage')];
+    }
+
+    private function invalidTokenResponse(Request $request): Response
+    {
+        if ($request->isXmlHttpRequest()) {
+            return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $this->addFlash('error', 'Votre session a expiré, veuillez réessayer.');
         return $this->redirectToRoute('app_cart');
     }
 }
