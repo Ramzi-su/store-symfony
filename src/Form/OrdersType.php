@@ -29,9 +29,13 @@ class OrdersType extends AbstractType
             ->add('created_at', null, [
                 'widget' => 'single_text',
             ])
+            // Guest orders have no user: without an empty choice, the select would pre-select
+            // the first user and saving would silently assign the order to that customer.
             ->add('user', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => 'id',
+                'required' => false,
+                'placeholder' => 'Invité (sans compte)',
             ])
         ;
     }

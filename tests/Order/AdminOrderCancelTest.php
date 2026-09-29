@@ -98,6 +98,21 @@ class AdminOrderCancelTest extends DatabaseWebTestCase
         $this->assertSame(0, $this->countRows('orders'));
     }
 
+    public function testEditingAGuestOrderKeepsItAGuestOrder(): void
+    {
+        $this->createUser('someone@example.com');
+        $order = $this->createReservedOrder(1, OrderStatus::Pending);
+        $order->setUser(null);
+        $this->em->flush();
+
+        $this->changeStatus($order, 'paid');
+
+        $this->assertNull(
+            $this->em->getConnection()->fetchOne('SELECT user_id FROM orders WHERE id = ?', [$order->getId()]),
+            'Saving the form must not assign the guest order to a customer.'
+        );
+    }
+
     private function changeStatus(Orders $order, string $status): void
     {
         $crawler = $this->client->request('GET', sprintf('/orders/%d/edit', $order->getId()));
