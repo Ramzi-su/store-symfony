@@ -20,7 +20,7 @@ class ShopSearchTest extends DatabaseWebTestCase
         $crawler = $this->client->request('GET', '/shop?q=galaxy');
 
         $this->assertResponseIsSuccessful();
-        $this->assertCount(1, $crawler->filter('a[href="/product/galaxy-s24"]'));
+        $this->assertGreaterThan(0, $crawler->filter('a[href="/product/galaxy-s24"]')->count());
         $this->assertCount(0, $crawler->filter('a[href="/product/pixel-8"]'));
     }
 

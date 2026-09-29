@@ -41,6 +41,38 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
+     * Number of products per category, in one query.
+     *
+     * @return array<string, int> category => count, sorted by category
+     */
+    public function countByCategory(): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.category AS category, COUNT(p.id) AS total')
+            ->groupBy('p.category')
+            ->orderBy('p.category', SortDirection::Ascending)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_column(array_map(fn (array $row) => [$row['category'], (int) $row['total']], $rows), 1, 0);
+    }
+
+    /**
+     * Product to put forward on the home page: the newest one on sale and in stock,
+     * or else the newest one in stock.
+     */
+    public function findFeatured(): ?Product
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.stock > 0')
+            ->orderBy('p.isSale', SortDirection::Descending)
+            ->addOrderBy('p.createdAt', SortDirection::Descending)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * Other products of the same category, newest first.
      *
      * @return list<Product>

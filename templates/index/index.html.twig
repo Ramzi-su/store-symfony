@@ -1,358 +1,87 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ministore - Home{% endblock %}
+{% block title %}MiniStore : smartphones, montres et audio{% endblock %}
 
 {% block body %}
   {% include 'partials/svg_icons.html.twig' %}
   {% include 'partials/header.html.twig' %}
-  
-  <section id="billboard" class="position-relative overflow-hidden bg-light-blue">
-    <div class="swiper main-swiper">
-      <div class="swiper-wrapper">
-        <div class="swiper-slide">
-          <div class="container">
-            <div class="row d-flex align-items-center">
-              <div class="col-md-6">
-                <div class="banner-content">
-                  <h1 class="display-2 text-uppercase text-dark pb-5">Your Products Are Great.</h1>
-                  <a href="{{ path('app_shop') }}" class="btn btn-medium btn-dark text-uppercase btn-rounded-none">Shop Product</a>
-                </div>
-              </div>
-              <div class="col-md-5">
-                <div class="image-holder">
-                  <img src="{{ asset('images/banner-image.png') }}" alt="banner">
-                </div>
-              </div>
-            </div>
-          </div>
+
+  <main>
+    <section class="ms-hero">
+      <div class="container ms-hero__grid">
+        <div>
+          <h1>Smartphones, montres et audio.</h1>
+          <p class="ms-hero__lead">Le stock affiché est le stock réel, et votre commande est réservée pendant le paiement.</p>
+          <a class="btn btn-primary btn-lg" href="{{ path('app_shop') }}">Voir la boutique</a>
         </div>
-        <div class="swiper-slide">
-          <div class="container">
-            <div class="row d-flex flex-wrap align-items-center">
-              <div class="col-md-6">
-                <div class="banner-content">
-                  <h1 class="display-2 text-uppercase text-dark pb-5">Technology Hack You Won't Get</h1>
-                  <a href="{{ path('app_shop') }}" class="btn btn-medium btn-dark text-uppercase btn-rounded-none">Shop Product</a>
-                </div>
-              </div>
-              <div class="col-md-5">
-                <div class="image-holder">
-                  <img src="{{ asset('images/banner-image.png') }}" alt="banner">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+
+        {% if featured %}
+          <a class="ms-hero__feature" href="{{ path('app_single_product', {slug: featured.slug}) }}">
+            {% if featured.image %}
+              <img src="{{ asset(featured.image) }}" alt="{{ featured.name }}" width="800" height="640" fetchpriority="high">
+            {% endif %}
+            <span class="ms-hero__caption">
+              <strong>{{ featured.name }}</strong>
+              <span class="ms-price">{{ featured.price|money }}</span>
+            </span>
+          </a>
+        {% endif %}
       </div>
-    </div>
-    <div class="swiper-icon swiper-arrow swiper-arrow-prev">
-      <svg class="chevron-left">
-        <use xlink:href="#chevron-left" />
-      </svg>
-    </div>
-    <div class="swiper-icon swiper-arrow swiper-arrow-next">
-      <svg class="chevron-right">
-        <use xlink:href="#chevron-right" />
-      </svg>
-    </div>
-  </section>
-  
-  <section id="company-services" class="padding-large">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-3 col-md-6 pb-3">
-          <div class="icon-box d-flex">
-            <div class="icon-box-icon pe-3 pb-3">
-              <svg class="cart-outline">
-                <use xlink:href="#cart-outline" />
-              </svg>
-            </div>
-            <div class="icon-box-content">
-              <h3 class="card-title text-uppercase text-dark">Free delivery</h3>
-              <p>Consectetur adipi elit lorem ipsum dolor sit amet.</p>
-            </div>
+    </section>
+
+    {% if categories is not empty %}
+      <section class="ms-section" aria-labelledby="home-categories">
+        <div class="container">
+          <div class="ms-section__head">
+            <h2 id="home-categories">Catégories</h2>
           </div>
-        </div>
-        <div class="col-lg-3 col-md-6 pb-3">
-          <div class="icon-box d-flex">
-            <div class="icon-box-icon pe-3 pb-3">
-              <svg class="quality">
-                <use xlink:href="#quality" />
-              </svg>
-            </div>
-            <div class="icon-box-content">
-              <h3 class="card-title text-uppercase text-dark">Quality guarantee</h3>
-              <p>Dolor sit amet orem ipsu mcons ectetur adipi elit.</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6 pb-3">
-          <div class="icon-box d-flex">
-            <div class="icon-box-icon pe-3 pb-3">
-              <svg class="price-tag">
-                <use xlink:href="#price-tag" />
-              </svg>
-            </div>
-            <div class="icon-box-content">
-              <h3 class="card-title text-uppercase text-dark">Daily offers</h3>
-              <p>Amet consectetur adipi elit loreme ipsum dolor sit.</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6 pb-3">
-          <div class="icon-box d-flex">
-            <div class="icon-box-icon pe-3 pb-3">
-              <svg class="shield-plus">
-                <use xlink:href="#shield-plus" />
-              </svg>
-            </div>
-            <div class="icon-box-content">
-              <h3 class="card-title text-uppercase text-dark">100% secure payment</h3>
-              <p>Rem Lopsum dolor sit amet, consectetur adipi elit.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  
-  <section id="mobile-products" class="product-store position-relative padding-large no-padding-top">
-    <div class="container">
-      <div class="row">
-        <div class="display-header d-flex justify-content-between pb-3">
-          <h2 class="display-7 text-dark text-uppercase">Mobile Products</h2>
-          <div class="btn-right">
-            <a href="{{ path('app_shop') }}" class="btn btn-medium btn-normal text-uppercase">Go to Shop</a>
-          </div>
-        </div>
-        <div class="swiper product-swiper">
-          <div class="swiper-wrapper">
-            {% for product in mobiles %}
-              <div class="swiper-slide">
-                {% include 'partials/product_card.html.twig' with {'product': product} %}
-              </div>
+          <div class="ms-categories">
+            {% for category, total in categories %}
+              <a class="ms-category" href="{{ path('app_shop', {category: category}) }}">
+                {{ category|category_label }}
+                <span>{{ total }} produit{{ total > 1 ? 's' }}</span>
+              </a>
             {% endfor %}
           </div>
         </div>
-      </div>
-    </div>
-    <div class="swiper-pagination position-absolute text-center"></div>
-  </section>
-  
-  <section id="smart-watches" class="product-store padding-large position-relative">
-    <div class="container">
-      <div class="row">
-        <div class="display-header d-flex justify-content-between pb-3">
-          <h2 class="display-7 text-dark text-uppercase">Smart Watches</h2>
-          <div class="btn-right">
-            <a href="{{ path('app_shop') }}" class="btn btn-medium btn-normal text-uppercase">Go to Shop</a>
-          </div>
+      </section>
+    {% endif %}
+
+    <section class="ms-section" aria-labelledby="home-new">
+      <div class="container">
+        <div class="ms-section__head">
+          <h2 id="home-new">Nouveautés</h2>
+          <a class="ms-link" href="{{ path('app_shop') }}">Voir tous les produits</a>
         </div>
-        <div class="swiper product-watch-swiper">
-          <div class="swiper-wrapper">
-            {% for product in watches %}
-              <div class="swiper-slide">
-                {% include 'partials/product_card.html.twig' with {'product': product} %}
-              </div>
+        {% if new_arrivals is not empty %}
+          <div class="ms-grid">
+            {% for product in new_arrivals %}
+              {% include 'partials/product_card.html.twig' with {product: product} %}
             {% endfor %}
           </div>
-        </div>
+        {% else %}
+          <p>Aucun produit pour le moment.</p>
+        {% endif %}
       </div>
-    </div>
-    <div class="swiper-pagination position-absolute text-center"></div>
-  </section>
-  
-  <section id="yearly-sale" class="bg-light-blue overflow-hidden mt-5 padding-xlarge" style="background-image: url('{{ asset('images/single-image1.png') }}');background-position: right; background-repeat: no-repeat;">
-    <div class="row d-flex flex-wrap align-items-center">
-      <div class="col-md-6 col-sm-12">
-        <div class="text-content offset-4 padding-medium">
-          <h3>10% off</h3>
-          <h2 class="display-2 pb-5 text-uppercase text-dark">New year sale</h2>
-          <a href="{{ path('app_shop') }}" class="btn btn-medium btn-dark text-uppercase btn-rounded-none">Shop Sale</a>
-        </div>
-      </div>
-      <div class="col-md-6 col-sm-12">
-        
-      </div>
-    </div>
-  </section>
-  
-  <section id="latest-blog" class="padding-large">
+    </section>
+
     <div class="container">
-      <div class="row">
-        <div class="display-header d-flex justify-content-between pb-3">
-          <h2 class="display-7 text-dark text-uppercase">Latest Posts</h2>
-          <div class="btn-right">
-            <a href="{{ path('app_blog') }}" class="btn btn-medium btn-normal text-uppercase">Read Blog</a>
-          </div>
-        </div>
-        <div class="post-grid d-flex flex-wrap justify-content-between">
-          {% for post in posts %}
-            <div class="col-lg-4 col-sm-12">
-              <div class="card border-none me-3">
-                <div class="card-image">
-                  <img src="{{ asset(post.image) }}" alt="{{ post.title }}" class="img-fluid">
-                </div>
-              </div>
-              <div class="card-body text-uppercase">
-                <div class="card-meta text-muted">
-                  <span class="post-date">{{ post.createdAt|date('F d, Y') }}</span>
-                  <span class="meta-category">- {{ post.category }}</span>
-                </div>
-                <h3 class="card-title">
-                  <a href="{{ path('app_single_post', {'id': post.id}) }}">{{ post.title }}</a>
-                </h3>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      </div>
+      <ul class="ms-facts">
+        <li>
+          <svg class="ms-icon" aria-hidden="true"><use href="#truck"></use></svg>
+          <div><strong>Livraison {{ constant('App\\Cart\\CartTotals::SHIPPING_COST')|money }}</strong><span>Un seul tarif par commande.</span></div>
+        </li>
+        <li>
+          <svg class="ms-icon" aria-hidden="true"><use href="#lock"></use></svg>
+          <div><strong>Paiement sécurisé</strong><span>Carte bancaire via Stripe, nous ne voyons jamais votre numéro.</span></div>
+        </li>
+        <li>
+          <svg class="ms-icon" aria-hidden="true"><use href="#box"></use></svg>
+          <div><strong>Stock réservé</strong><span>Vos articles sont mis de côté pendant 30 minutes de paiement.</span></div>
+        </li>
+      </ul>
     </div>
-  </section>
-  
-  <section id="testimonials" class="position-relative">
-    <div class="container">
-      <div class="row">
-        <div class="review-content position-relative">
-          <div class="swiper-icon swiper-arrow swiper-arrow-prev position-absolute d-flex align-items-center">
-            <svg class="chevron-left">
-              <use xlink:href="#chevron-left" />
-            </svg>
-          </div>
-          <div class="swiper testimonial-swiper">
-            <div class="quotation text-center">
-              <svg class="quote">
-                <use xlink:href="#quote" />
-              </svg>
-            </div>
-            <div class="swiper-wrapper">
-              <div class="swiper-slide text-center d-flex justify-content-center">
-                <div class="review-item col-md-10">
-                  <i class="icon icon-review"></i>
-                  <blockquote>"Tempus oncu enim pellen tesque este pretium in neque, elit morbi sagittis lorem habi mattis Pellen tesque pretium feugiat vel morbi suspen dise sagittis lorem habi tasse morbi."</blockquote>
-                  <div class="rating">
-                    <svg class="star star-fill">
-                      <use xlink:href="#star-fill"></use>
-                    </svg>
-                    <svg class="star star-fill">
-                      <use xlink:href="#star-fill"></use>
-                    </svg>
-                    <svg class="star star-fill">
-                      <use xlink:href="#star-fill"></use>
-                    </svg>
-                    <svg class="star star-half">
-                      <use xlink:href="#star-half"></use>
-                    </svg>
-                    <svg class="star star-empty">
-                      <use xlink:href="#star-empty"></use>
-                    </svg>
-                  </div>
-                  <div class="author-detail">
-                    <div class="name text-dark text-uppercase pt-2">Emma Chamberlin</div>
-                  </div>
-                </div>
-              </div>
-              <div class="swiper-slide text-center d-flex justify-content-center">
-                <div class="review-item col-md-10">
-                  <i class="icon icon-review"></i>
-                  <blockquote>"A blog is a digital publication that can complement a website or exist independently. A blog may include articles, short posts, listicles, infographics, videos, and other digital content."</blockquote>
-                  <div class="rating">
-                    <svg class="star star-fill">
-                      <use xlink:href="#star-fill"></use>
-                    </svg>
-                    <svg class="star star-fill">
-                      <use xlink:href="#star-fill"></use>
-                    </svg>
-                    <svg class="star star-fill">
-                      <use xlink:href="#star-fill"></use>
-                    </svg>
-                    <svg class="star star-half">
-                      <use xlink:href="#star-half"></use>
-                    </svg>
-                    <svg class="star star-empty">
-                      <use xlink:href="#star-empty"></use>
-                    </svg>
-                  </div>
-                  <div class="author-detail">
-                    <div class="name text-dark text-uppercase pt-2">Jennie Rose</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="swiper-icon swiper-arrow swiper-arrow-next position-absolute d-flex align-items-center">
-            <svg class="chevron-right">
-              <use xlink:href="#chevron-right" />
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="swiper-pagination"></div>
-  </section>
-  
-  
-  <section id="instagram" class="padding-large overflow-hidden no-padding-top">
-    <div class="container">
-      <div class="row">
-        <div class="display-header text-uppercase text-dark text-center pb-3">
-          <h2 class="display-7">Shop Our Insta</h2>
-        </div>
-        <div class="d-flex flex-wrap">
-          <figure class="instagram-item pe-2">
-            <a href="#" class="image-link position-relative">
-              <img src="{{ asset('images/insta-item1.jpg') }}" alt="instagram" class="insta-image">
-              <div class="icon-overlay position-absolute d-flex justify-content-center">
-                <svg class="instagram">
-                  <use xlink:href="#instagram"></use>
-                </svg>
-              </div>
-            </a>
-          </figure>
-          <figure class="instagram-item pe-2">
-            <a href="#" class="image-link position-relative">
-              <img src="{{ asset('images/insta-item2.jpg') }}" alt="instagram" class="insta-image">
-              <div class="icon-overlay position-absolute d-flex justify-content-center">
-                <svg class="instagram">
-                  <use xlink:href="#instagram"></use>
-                </svg>
-              </div>
-            </a>
-          </figure>
-          <figure class="instagram-item pe-2">
-            <a href="#" class="image-link position-relative">
-              <img src="{{ asset('images/insta-item3.jpg') }}" alt="instagram" class="insta-image">
-              <div class="icon-overlay position-absolute d-flex justify-content-center">
-                <svg class="instagram">
-                  <use xlink:href="#instagram"></use>
-                </svg>
-              </div>
-            </a>
-          </figure>
-          <figure class="instagram-item pe-2">
-            <a href="#" class="image-link position-relative">
-              <img src="{{ asset('images/insta-item4.jpg') }}" alt="instagram" class="insta-image">
-              <div class="icon-overlay position-absolute d-flex justify-content-center">
-                <svg class="instagram">
-                  <use xlink:href="#instagram"></use>
-                </svg>
-              </div>
-            </a>
-          </figure>
-          <figure class="instagram-item pe-2">
-            <a href="#" class="image-link position-relative">
-              <img src="{{ asset('images/insta-item5.jpg') }}" alt="instagram" class="insta-image">
-              <div class="icon-overlay position-absolute d-flex justify-content-center">
-                <svg class="instagram">
-                  <use xlink:href="#instagram"></use>
-                </svg>
-              </div>
-            </a>
-          </figure>
-        </div>
-      </div>
-    </div>
-  </section>
-  
+  </main>
+
   {% include 'partials/footer.html.twig' %}
 {% endblock %}

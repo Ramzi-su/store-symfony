@@ -42,6 +42,8 @@ class StockCheckTest extends DatabaseWebTestCase
     {
         $this->product->setStock(0);
         $this->em->flush();
+        // An out-of-stock tile has no form: another product provides the cart CSRF token.
+        $this->createProduct('Other Phone');
 
         $this->post('/cart/add/' . $this->product->getId(), ['quantity' => 1]);
 

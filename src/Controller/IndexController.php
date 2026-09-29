@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Repository\PostRepository;
 use App\Repository\ProductRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,32 +9,16 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class IndexController extends AbstractController
 {
-    private ProductRepository $productRepository;
-    private PostRepository $postRepository;
-
-    public function __construct(ProductRepository $productRepository, PostRepository $postRepository)
-    {
-        $this->productRepository = $productRepository;
-        $this->postRepository = $postRepository;
-    }
+    private const NEW_ARRIVALS = 8;
 
     #[Route('/', name: 'app_home')]
-    public function index(): Response
+    public function index(ProductRepository $productRepository): Response
     {
-        $user = $this->getUser(); // ✅ Pas besoin d'injecter Security
-
-        if ($user && in_array('ROLE_ADMIN', $user->getRoles(), true)) {
-            return $this->redirectToRoute('admin_dashboard');
-        }
-
-        $mobiles = $this->productRepository->findBy(['category' => 'mobile'], ['createdAt' => 'DESC'], 6);
-        $watches = $this->productRepository->findBy(['category' => 'watch'], ['createdAt' => 'DESC'], 6);
-        $posts = $this->postRepository->findBy([], ['createdAt' => 'DESC'], 3);
-
+        // Admins see the storefront too; the header links them to the administration.
         return $this->render('index/index.html.twig', [
-            'mobiles' => $mobiles,
-            'watches' => $watches,
-            'posts' => $posts,
+            'featured' => $productRepository->findFeatured(),
+            'categories' => $productRepository->countByCategory(),
+            'new_arrivals' => $productRepository->findBy([], ['createdAt' => 'DESC'], self::NEW_ARRIVALS),
         ]);
     }
 }

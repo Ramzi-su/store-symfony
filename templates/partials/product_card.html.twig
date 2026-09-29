@@ -1,57 +1,39 @@
-{# templates/partials/product_card.html.twig #}
-<div class="product-card position-relative">
-    {% if product.isIsSale %}        <div class="card-badge bg-primary text-white position-absolute top-0 start-0 m-2 py-1 px-2">Sale</div>
-    {% endif %}
-    <div class="image-holder position-relative">
-        {% if product.slug %}
-  <a href="{{ path('app_single_product', { 'slug': product.slug }) }}">
-    Voir le produit
-  </a>
-{% else %}
-  <span class="text-muted">Slug manquant</span>
-{% endif %}
+{# Product tile. Expects "product". Stock status is the real value, not decoration. #}
+{% set url = path('app_single_product', {slug: product.slug}) %}
+{% set low_stock_threshold = 3 %}
 
-            <img src="{{ asset(product.image) }}" alt="{{ product.name }}" class="img-fluid">
-        </a>
-        <div class="card-button-group position-absolute bottom-0 start-50 translate-middle-x mb-3">
-            {# A POST form with a CSRF token: a plain link (GET) could be triggered by another website #}
-            <form action="{{ path('app_cart_add', {'id': product.id}) }}" method="post" class="d-inline">
-                <input type="hidden" name="_token" value="{{ csrf_token('cart') }}">
-                <button type="submit" class="btn btn-sm btn-primary me-1">Add to Cart</button>
-            </form>
-            
-                <svg class="heart" width="16" height="16">
-                    <use xlink:href="#heart"></use>
-                </svg>
-            </a>
-        </div>
+<article class="ms-tile">
+  <a class="ms-tile__media" href="{{ url }}" tabindex="-1" aria-hidden="true">
+    {% if product.image %}
+      <img src="{{ asset(product.image) }}" alt="" loading="lazy" width="400" height="400">
+    {% endif %}
+    {% if product.isIsSale %}<span class="ms-tile__badge">Promo</span>{% endif %}
+  </a>
+
+  <div class="ms-tile__body">
+    <p class="ms-tile__category">{{ product.category|category_label }}</p>
+    <h3 class="ms-tile__name"><a href="{{ url }}">{{ product.name }}</a></h3>
+
+    <div class="ms-tile__meta">
+      <span class="ms-tile__price ms-price">{{ product.price|money }}</span>
+      {% if product.stock <= 0 %}
+        <span class="ms-stock ms-stock--out">Épuisé</span>
+      {% elseif product.stock <= low_stock_threshold %}
+        <span class="ms-stock ms-stock--low">Plus que {{ product.stock }}</span>
+      {% else %}
+        <span class="ms-stock">En stock</span>
+      {% endif %}
     </div>
-    <div class="card-detail text-center pt-3">
-        <h3 class="card-title fs-6 mb-1">
-           
-        </h3>
-        <div class="rating">
-            {% for i in 1..5 %}
-                
-                    <svg class="star-fill" width="16" height="16">
-                        <use xlink:href="#star-fill"></use>
-                    </svg>
-                
-                    <svg class="star-half" width="16" height="16">
-                        <use xlink:href="#star-half"></use>
-                    </svg>
-                {% else %}
-                    <svg class="star-empty" width="16" height="16">
-                        <use xlink:href="#star-empty"></use>
-                    </svg>
-                
-            {% endfor %}
-        </div>
-        <div class="price">
-            
-             
-            
-            <span class="current-price">{{ product.price|money }}</span>
-        </div>
-    </div>
-</div>
+
+    {% if product.stock > 0 %}
+      <form action="{{ path('app_cart_add', {'id': product.id}) }}" method="post">
+        <input type="hidden" name="_token" value="{{ csrf_token('cart') }}">
+        <button type="submit" class="btn btn-primary ms-tile__cta">
+          Ajouter au panier<span class="ms-visually-hidden"> : {{ product.name }}</span>
+        </button>
+      </form>
+    {% else %}
+      <button type="button" class="btn ms-tile__cta" disabled>Indisponible</button>
+    {% endif %}
+  </div>
+</article>
