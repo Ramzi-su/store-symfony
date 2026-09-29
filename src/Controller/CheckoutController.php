@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use App\Cart\CartService;
+use App\Cart\Exception\OutOfStockException;
 use App\Entity\Orders;
 use App\Entity\OrderItems;
 use App\Enum\OrderStatus;
+use App\Order\StockReservation;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Stripe\Stripe;
@@ -27,6 +29,7 @@ class CheckoutController extends AbstractController
 {
     private EntityManagerInterface $em;
     private CartService $cart;
+    private StockReservation $stockReservation;
     private SessionInterface $session;
     private ?string $stripeSecretKey;
     private ?string $stripeWebhookSecret;
@@ -34,12 +37,14 @@ class CheckoutController extends AbstractController
     public function __construct(
         EntityManagerInterface $em,
         CartService $cart,
+        StockReservation $stockReservation,
         RequestStack $requestStack,
         ?string $stripeSecretKey,
         ?string $stripeWebhookSecret
     ) {
         $this->em = $em;
         $this->cart = $cart;
+        $this->stockReservation = $stockReservation;
         $this->session = $requestStack->getSession();
         $this->stripeSecretKey = $stripeSecretKey;
         $this->stripeWebhookSecret = $stripeWebhookSecret;
@@ -130,8 +135,6 @@ class CheckoutController extends AbstractController
             return $this->redirectToRoute('app_checkout');
         }
 
-        $this->em->persist($order);
-
         foreach ($lines as $line) {
             $orderItem = new OrderItems();
             $orderItem->setOrder($order);
@@ -143,7 +146,19 @@ class CheckoutController extends AbstractController
             $order->addItem($orderItem);
         }
 
-        $this->em->flush();
+        // The order and its stock reservation are saved together, or not at all.
+        $connection = $this->em->getConnection();
+        $connection->beginTransaction();
+        try {
+            $this->em->persist($order);
+            $this->em->flush();
+            $this->stockReservation->reserve($order);
+            $connection->commit();
+        } catch (OutOfStockException $e) {
+            $connection->rollBack();
+            $this->addFlash('error', sprintf('« %s » vient d’être épuisé : ajustez votre panier.', $e->product->getName()));
+            return $this->redirectToRoute('app_cart');
+        }
         $this->session->set('order_id', $order->getId());
 
         try {
@@ -197,6 +212,8 @@ class CheckoutController extends AbstractController
                 'cancel_url' => $this->generateUrl('app_checkout_cancel', [], UrlGeneratorInterface::ABSOLUTE_URL),
                 'customer_email' => $order->getEmail(),
                 'metadata' => ['order_id' => $order->getId()],
+                // Reserved stock is released when the session expires (webhook), so keep it short.
+                'expires_at' => time() + 30 * 60,
             ]);
 
             // Stored on the order (reconciliation, webhook check) and in the session
@@ -209,6 +226,7 @@ class CheckoutController extends AbstractController
         } catch (ApiErrorException $e) {
             // Stripe error details stay in the logs, never in the user's browser.
             $logger->error('Stripe checkout session creation failed.', ['exception' => $e]);
+            $this->stockReservation->cancel($order);
             $this->addFlash('error', 'Le paiement n’a pas pu être initialisé. Veuillez réessayer.');
             return $this->redirectToRoute('app_checkout');
         }
@@ -287,6 +305,16 @@ class CheckoutController extends AbstractController
             }
         }
 
+        // The customer never paid within the session lifetime: give the stock back.
+        if ($event->type === 'checkout.session.expired') {
+            $stripeSession = $event->data->object;
+            $order = $this->em->getRepository(Orders::class)->find((int) ($stripeSession->metadata['order_id'] ?? 0));
+
+            if ($order && $order->getStripeSessionId() === $stripeSession->id) {
+                $this->stockReservation->cancel($order);
+            }
+        }
+
         return new Response('', Response::HTTP_OK);
     }
 
@@ -296,10 +324,9 @@ class CheckoutController extends AbstractController
         $orderId = $this->session->get('order_id');
         if ($orderId) {
             $order = $this->em->getRepository(Orders::class)->find($orderId);
-            // Never cancel an order that was paid meanwhile (e.g. confirmed by the webhook).
-            if ($order && $order->getStatus()?->isCancellable()) {
-                $order->setStatus(OrderStatus::Cancelled);
-                $this->em->flush();
+            // Only a pending order is cancelled (never one paid meanwhile), and its stock is released.
+            if ($order) {
+                $this->stockReservation->cancel($order);
             }
             $this->session->remove('order_id');
         }

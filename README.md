@@ -86,6 +86,10 @@ Conventions :
   l'affichage, avec `{{ montant|money }}`.
 - **Paiement** : une commande n'est marquée `paid` qu'après vérification auprès de Stripe
   (page de succès) ou via le webhook signé — jamais sur la seule redirection du navigateur.
+- **Stock** : réservé à la création de la commande (avant Stripe) par une mise à jour SQL atomique,
+  puis rendu si le paiement est annulé ou si la session Stripe expire (30 min, webhook
+  `checkout.session.expired`). Le webhook Stripe doit donc écouter `checkout.session.completed`
+  **et** `checkout.session.expired`.
 - **Autorisations** : `access_control` protège les zones (`/admin`, `/orders`, `/user` : admin ;
   `/account` : connecté), `OrderVoter` protège chaque commande (propriétaire ou admin).
 - Les formulaires qui modifient des données (panier, paiement, renvoi de code) sont en POST
