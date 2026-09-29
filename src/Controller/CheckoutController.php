@@ -53,6 +53,10 @@ class CheckoutController extends AbstractController
             return $this->redirectToRoute('app_cart');
         }
 
+        if ($response = $this->redirectIfStockIsShort()) {
+            return $response;
+        }
+
         $totals = $this->cart->getTotals();
 
         return $this->render('checkout/checkout.html.twig', [
@@ -75,6 +79,10 @@ class CheckoutController extends AbstractController
         if ($this->cart->isEmpty()) {
             $this->addFlash('error', 'Votre panier est vide.');
             return $this->redirectToRoute('app_cart');
+        }
+
+        if ($response = $this->redirectIfStockIsShort()) {
+            return $response;
         }
 
         // Without Stripe there is no way to take a payment: refuse instead of faking a success.
@@ -298,6 +306,25 @@ class CheckoutController extends AbstractController
 
         $this->addFlash('error', 'Paiement annulé.');
         return $this->redirectToRoute('app_checkout');
+    }
+
+    // Stock may have changed since the products were added: never sell what is not available.
+    private function redirectIfStockIsShort(): ?Response
+    {
+        $unavailable = $this->cart->findUnavailableProducts();
+        if ($unavailable === []) {
+            return null;
+        }
+
+        foreach ($unavailable as $product) {
+            $this->addFlash('error', sprintf(
+                'Stock insuffisant pour « %s » (%d disponible(s)) : ajustez la quantité.',
+                $product->getName(),
+                $product->getStock()
+            ));
+        }
+
+        return $this->redirectToRoute('app_cart');
     }
 
     private function isPaidSessionForOrder(StripeSession $stripeSession, Orders $order): bool

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Cart\CartService;
+use App\Cart\Exception\OutOfStockException;
 use App\Entity\Product;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,10 +38,25 @@ class CartController extends AbstractController
             return $this->invalidTokenResponse($request);
         }
 
-        $this->cart->add($product, $request->request->getInt('quantity', 1), ...$this->options($request));
+        $requested = max(1, $request->request->getInt('quantity', 1));
+        $back = $this->redirect($request->headers->get('referer') ?? $this->generateUrl('app_cart'));
 
-        $this->addFlash('success', 'Produit ajouté au panier.');
-        return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('app_cart'));
+        try {
+            $added = $this->cart->add($product, $requested, ...$this->options($request));
+        } catch (OutOfStockException) {
+            $this->addFlash('error', sprintf('« %s » n’est plus en stock.', $product->getName()));
+            return $back;
+        }
+
+        if ($added < $requested) {
+            $this->addFlash('warning', $added > 0
+                ? sprintf('Stock limité : seulement %d article(s) ajouté(s).', $added)
+                : 'Vous avez déjà tout le stock disponible dans votre panier.');
+        } else {
+            $this->addFlash('success', 'Produit ajouté au panier.');
+        }
+
+        return $back;
     }
 
     #[Route('/update/{id}', name: 'app_cart_update', methods: ['POST'])]
@@ -50,10 +66,24 @@ class CartController extends AbstractController
             return $this->invalidTokenResponse($request);
         }
 
-        $this->cart->update($product, $request->request->getInt('quantity', 1), ...$this->options($request));
+        $requested = max(1, $request->request->getInt('quantity', 1));
+
+        try {
+            $quantity = $this->cart->update($product, $requested, ...$this->options($request));
+        } catch (OutOfStockException) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['success' => false, 'error' => 'Out of stock.'], Response::HTTP_CONFLICT);
+            }
+            $this->addFlash('error', sprintf('« %s » n’est plus en stock : retirez-le du panier.', $product->getName()));
+            return $this->redirectToRoute('app_cart');
+        }
 
         if ($request->isXmlHttpRequest()) {
-            return $this->json(['success' => true]);
+            return $this->json(['success' => true, 'quantity' => $quantity]);
+        }
+
+        if ($quantity < $requested) {
+            $this->addFlash('warning', sprintf('Stock limité : quantité ramenée à %d.', $quantity));
         }
 
         return $this->redirectToRoute('app_cart');

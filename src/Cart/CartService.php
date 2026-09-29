@@ -2,6 +2,7 @@
 
 namespace App\Cart;
 
+use App\Cart\Exception\OutOfStockException;
 use App\Entity\Cart;
 use App\Entity\CartItem;
 use App\Entity\Product;
@@ -91,62 +92,64 @@ class CartService
         return array_sum(array_map(fn (array $entry) => (int) ($entry['quantity'] ?? 1), $this->getSessionCart()));
     }
 
-    public function add(Product $product, int $quantity, ?string $color, ?string $storage): void
+    /**
+     * Adds up to $quantity units, never more than the stock allows.
+     *
+     * @return int the number of units actually added (less than requested when stock is short)
+     *
+     * @throws OutOfStockException when no unit at all can be added
+     */
+    public function add(Product $product, int $quantity, ?string $color, ?string $storage): int
     {
-        $quantity = $this->clampQuantity($quantity);
-        $user = $this->getUser();
+        $current = $this->lineQuantity($product, $color, $storage);
+        $allowed = $this->allowedLineQuantity($product, $current);
+        $final = min($current + max(1, $quantity), $allowed);
 
-        if ($user) {
-            $item = $this->findItem($user, $product, $color, $storage);
-            if ($item) {
-                $item->setQuantity($this->clampQuantity($item->getQuantity() + $quantity));
-            } else {
-                $item = (new CartItem())
-                    ->setUser($user)
-                    ->setProduct($product)
-                    ->setColor($color)
-                    ->setStorage($storage)
-                    ->setQuantity($quantity);
-                $this->getOrCreateCart($user)->addItem($item);
-                $this->em->persist($item);
-            }
-            $this->em->flush();
+        $this->saveLine($product, $final, $color, $storage);
 
-            return;
-        }
-
-        $cart = $this->getSessionCart();
-        $key = $this->sessionKey($product, $color, $storage);
-        $cart[$key] = [
-            'product_id' => $product->getId(),
-            'quantity' => $this->clampQuantity(($cart[$key]['quantity'] ?? 0) + $quantity),
-            'color' => $color,
-            'storage' => $storage,
-        ];
-        $this->saveSessionCart($cart);
+        return $final - $current;
     }
 
-    public function update(Product $product, int $quantity, ?string $color, ?string $storage): void
+    /**
+     * Sets the quantity of a cart line, capped by the stock.
+     *
+     * @return int the quantity actually stored
+     *
+     * @throws OutOfStockException when the product is no longer in stock
+     */
+    public function update(Product $product, int $quantity, ?string $color, ?string $storage): int
     {
-        $quantity = $this->clampQuantity($quantity);
-        $user = $this->getUser();
-
-        if ($user) {
-            $item = $this->findItem($user, $product, $color, $storage);
-            if ($item) {
-                $item->setQuantity($quantity);
-                $this->em->flush();
-            }
-
-            return;
+        $current = $this->lineQuantity($product, $color, $storage);
+        if ($current === 0) {
+            return 0;
         }
 
-        $cart = $this->getSessionCart();
-        $key = $this->sessionKey($product, $color, $storage);
-        if (isset($cart[$key])) {
-            $cart[$key]['quantity'] = $quantity;
-            $this->saveSessionCart($cart);
+        $final = min(max(1, $quantity), $this->allowedLineQuantity($product, $current));
+        $this->saveLine($product, $final, $color, $storage);
+
+        return $final;
+    }
+
+    /**
+     * Products whose quantity in the cart (all options together) exceeds the current stock.
+     * Stock can change between adding to the cart and paying, so checkout checks again.
+     *
+     * @return list<Product>
+     */
+    public function findUnavailableProducts(): array
+    {
+        $quantities = [];
+        $products = [];
+        foreach ($this->getLines() as $line) {
+            $id = $line->product->getId();
+            $quantities[$id] = ($quantities[$id] ?? 0) + $line->quantity;
+            $products[$id] = $line->product;
         }
+
+        return array_values(array_filter(
+            $products,
+            fn (Product $product) => $quantities[$product->getId()] > $product->getStock()
+        ));
     }
 
     public function remove(Product $product, ?string $color, ?string $storage): void
@@ -184,9 +187,77 @@ class CartService
         $this->requestStack->getSession()->remove(self::SESSION_KEY);
     }
 
-    private function clampQuantity(int $quantity): int
+    /**
+     * Highest quantity this line may hold: the stock minus the units of the same
+     * product already in other lines (other color/storage), and at most MAX_QUANTITY.
+     *
+     * @throws OutOfStockException
+     */
+    private function allowedLineQuantity(Product $product, int $currentLineQuantity): int
     {
-        return max(1, min(self::MAX_QUANTITY, $quantity));
+        $inOtherLines = $this->productQuantity($product) - $currentLineQuantity;
+        $allowed = min(self::MAX_QUANTITY, (int) $product->getStock() - $inOtherLines);
+
+        if ($allowed < 1) {
+            throw new OutOfStockException($product);
+        }
+
+        return $allowed;
+    }
+
+    // Units of this product in the whole cart, all options together.
+    private function productQuantity(Product $product): int
+    {
+        $total = 0;
+        foreach ($this->getLines() as $line) {
+            if ($line->product->getId() === $product->getId()) {
+                $total += $line->quantity;
+            }
+        }
+
+        return $total;
+    }
+
+    private function lineQuantity(Product $product, ?string $color, ?string $storage): int
+    {
+        $user = $this->getUser();
+        if ($user) {
+            return $this->findItem($user, $product, $color, $storage)?->getQuantity() ?? 0;
+        }
+
+        return (int) ($this->getSessionCart()[$this->sessionKey($product, $color, $storage)]['quantity'] ?? 0);
+    }
+
+    // Creates or updates the line in the right storage.
+    private function saveLine(Product $product, int $quantity, ?string $color, ?string $storage): void
+    {
+        $user = $this->getUser();
+
+        if ($user) {
+            $item = $this->findItem($user, $product, $color, $storage);
+            if (!$item) {
+                $item = (new CartItem())
+                    ->setUser($user)
+                    ->setProduct($product)
+                    ->setColor($color)
+                    ->setStorage($storage);
+                $this->getOrCreateCart($user)->addItem($item);
+                $this->em->persist($item);
+            }
+            $item->setQuantity($quantity);
+            $this->em->flush();
+
+            return;
+        }
+
+        $cart = $this->getSessionCart();
+        $cart[$this->sessionKey($product, $color, $storage)] = [
+            'product_id' => $product->getId(),
+            'quantity' => $quantity,
+            'color' => $color,
+            'storage' => $storage,
+        ];
+        $this->saveSessionCart($cart);
     }
 
     private function getUser(): ?User

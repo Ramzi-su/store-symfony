@@ -15,7 +15,7 @@
 
   <section class="single-product-section padding-large">
     <div class="container">
-      {% for type, alertClass in {'success': 'success', 'error': 'danger'} %}
+      {% for type, alertClass in {'success': 'success', 'warning': 'warning', 'error': 'danger'} %}
         {% for message in app.flashes(type) %}
           <div class="alert alert-{{ alertClass }}" role="alert">{{ message }}</div>
         {% endfor %}
