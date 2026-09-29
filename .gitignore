@@ -45,3 +45,5 @@ yarn-error.log*
 
 # Dossier pour les fichiers uploadés (à adapter si besoin)
 /public/uploads/
+# Tool state written in the project when HOME points to it (e.g. the Stripe SDK telemetry id)
+/.config/
