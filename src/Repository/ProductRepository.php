@@ -18,6 +18,29 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
+     * Products of a category and/or whose name contains $query, newest first.
+     *
+     * @return list<Product>
+     */
+    public function search(?string $category, ?string $query): array
+    {
+        $qb = $this->createQueryBuilder('p')->orderBy('p.createdAt', SortDirection::Descending);
+
+        if ($category) {
+            $qb->andWhere('p.category = :category')->setParameter('category', $category);
+        }
+
+        $query = trim((string) $query);
+        if ($query !== '') {
+            // Bound parameter (no SQL injection); % and _ typed by the visitor are matched literally.
+            $qb->andWhere('LOWER(p.name) LIKE :query')
+                ->setParameter('query', '%' . addcslashes(mb_strtolower($query), '%_\\') . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Other products of the same category, newest first.
      *
      * @return list<Product>

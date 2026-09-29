@@ -1,0 +1,399 @@
+/*
+ * MiniStore theme — loaded after bootstrap.min.css and style.css (the original template).
+ * It redefines the template variables and restyles shared components.
+ *
+ * Palette (each accent has one job):
+ *   graphite  text, header          slate  secondary text
+ *   aluminium product photo tiles   teal   actions only (buttons, links that act)
+ *   coral     signals only (sale, out of stock, errors)
+ */
+
+/* ---------------------------------------------------------------------------
+   1. Tokens
+   ------------------------------------------------------------------------- */
+:root {
+  --ms-graphite: #1c2126;
+  --ms-slate: #5b6670;
+  --ms-aluminium: #eceff1;
+  --ms-line: #d9dee2;
+  --ms-white: #ffffff;
+  --ms-teal: #0a6c66;
+  --ms-teal-dark: #07524e;
+  --ms-coral: #c8452f;
+  --ms-focus: #0a6c66;
+
+  --ms-font: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Type scale (1.25 ratio) */
+  --ms-text-sm: 0.875rem;
+  --ms-text-base: 1rem;
+  --ms-text-lg: 1.25rem;
+  --ms-text-xl: 1.5625rem;
+  --ms-text-2xl: 1.953rem;
+  --ms-text-3xl: clamp(2rem, 1.4rem + 2.6vw, 3.05rem);
+
+  /* Spacing */
+  --ms-space-1: 0.25rem;
+  --ms-space-2: 0.5rem;
+  --ms-space-3: 1rem;
+  --ms-space-4: 1.5rem;
+  --ms-space-5: 2.5rem;
+  --ms-space-6: 4rem;
+
+  --ms-radius: 6px;
+  --ms-header-height: 72px;
+
+  /* Original template variables, remapped so untouched pages follow the theme. */
+  --primary-color: var(--ms-teal);
+  --bs-primary-rgb: 10, 108, 102;
+  --accent-color: var(--ms-slate);
+  --dark-color: var(--ms-graphite);
+  --light-blue-color: var(--ms-aluminium);
+  --gray-color: var(--ms-aluminium);
+  --body-font: var(--ms-font);
+  --heading-font: var(--ms-font);
+
+  /* Bootstrap variables */
+  --bs-body-font-family: var(--ms-font);
+  --bs-body-color: var(--ms-graphite);
+  --bs-primary: var(--ms-teal);
+  --bs-link-color: var(--ms-teal);
+  --bs-link-hover-color: var(--ms-teal-dark);
+  --bs-border-color: var(--ms-line);
+  --bs-border-radius: var(--ms-radius);
+}
+
+/* ---------------------------------------------------------------------------
+   2. Base
+   ------------------------------------------------------------------------- */
+body {
+  font-family: var(--ms-font);
+  font-size: var(--ms-text-base);
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--ms-graphite);
+  background: var(--ms-white);
+  /* The header is fixed: keep content below it. */
+  padding-top: var(--ms-header-height);
+}
+
+p {
+  font-size: var(--ms-text-base);
+  color: var(--ms-slate);
+  max-width: 68ch;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6, .display-7 {
+  font-family: var(--ms-font);
+  color: var(--ms-graphite);
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+h1, .h1 { font-size: var(--ms-text-3xl); font-weight: 800; }
+h2, .h2 { font-size: var(--ms-text-2xl); font-weight: 800; }
+h3, .h3 { font-size: var(--ms-text-xl); font-weight: 700; }
+h4, .h4, h5, .h5, h6, .h6 { font-size: var(--ms-text-lg); font-weight: 700; }
+
+/* The template forces uppercase through utility classes: the theme uses sentence case. */
+.text-uppercase { text-transform: none !important; }
+
+a { color: var(--ms-graphite); }
+a:hover { color: var(--ms-teal); }
+
+/* Prices and quantities line up in lists and in the cart. */
+.price, .current-price, .subtotal, .ms-price {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ms-focus);
+  outline-offset: 2px;
+}
+
+.ms-visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.ms-icon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+/* ---------------------------------------------------------------------------
+   3. Buttons, forms, alerts
+   ------------------------------------------------------------------------- */
+.btn {
+  font-family: var(--ms-font);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: var(--ms-radius);
+}
+.btn.btn-primary,
+.btn.btn-dark,
+.btn.btn-black {
+  background: var(--ms-teal);
+  border: 1px solid var(--ms-teal);
+  color: var(--ms-white);
+}
+.btn.btn-primary:hover,
+.btn.btn-dark:hover,
+.btn.btn-black:hover {
+  background: var(--ms-teal-dark);
+  border-color: var(--ms-teal-dark);
+  color: var(--ms-white);
+}
+.btn.btn-outline-dark,
+.btn.btn-outline-primary,
+.btn.btn-outline-secondary {
+  background: transparent;
+  border: 1px solid var(--ms-graphite);
+  color: var(--ms-graphite);
+}
+.btn.btn-outline-dark:hover,
+.btn.btn-outline-primary:hover,
+.btn.btn-outline-secondary:hover {
+  background: var(--ms-graphite);
+  color: var(--ms-white);
+}
+/* The template draws decorative pseudo-elements on buttons. */
+.btn::after { display: none !important; }
+
+.form-control, .form-select {
+  font-family: var(--ms-font);
+  border-color: var(--ms-line);
+  border-radius: var(--ms-radius);
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--ms-teal);
+  box-shadow: 0 0 0 3px rgba(10, 108, 102, 0.15);
+}
+.form-label, label { color: var(--ms-graphite); font-weight: 600; }
+.form-error ul, .invalid-feedback { color: var(--ms-coral); font-size: var(--ms-text-sm); }
+.form-error ul { list-style: none; padding: 0; margin: var(--ms-space-1) 0 0; }
+
+.alert {
+  border-radius: var(--ms-radius);
+  border-width: 0 0 0 4px;
+  font-weight: 500;
+}
+.alert-success { background: #e7f3f2; border-color: var(--ms-teal); color: var(--ms-teal-dark); }
+.alert-danger  { background: #fbecea; border-color: var(--ms-coral); color: #8e2f20; }
+.alert-warning { background: #fdf4e3; border-color: #b7791f; color: #6f4a12; }
+.alert-info    { background: var(--ms-aluminium); border-color: var(--ms-slate); color: var(--ms-graphite); }
+
+/* ---------------------------------------------------------------------------
+   4. Header
+   ------------------------------------------------------------------------- */
+.ms-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 1030;
+  height: var(--ms-header-height);
+  background: var(--ms-white);
+  border-bottom: 1px solid var(--ms-line);
+}
+.ms-header__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--ms-space-4);
+}
+.ms-brand {
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  color: var(--ms-graphite);
+  white-space: nowrap;
+}
+.ms-brand:hover { color: var(--ms-graphite); }
+.ms-nav {
+  display: flex;
+  gap: var(--ms-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ms-nav a {
+  font-weight: 600;
+  color: var(--ms-slate);
+  padding: var(--ms-space-2) 0;
+  border-bottom: 2px solid transparent;
+}
+.ms-nav a:hover,
+.ms-nav a[aria-current="page"] {
+  color: var(--ms-graphite);
+  border-bottom-color: var(--ms-graphite);
+}
+.ms-search {
+  flex: 1;
+  max-width: 360px;
+  margin-left: auto;
+  position: relative;
+}
+.ms-search input {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--ms-space-3) 0 40px;
+  border: 1px solid var(--ms-line);
+  border-radius: var(--ms-radius);
+  background: var(--ms-aluminium);
+  font: inherit;
+  font-size: var(--ms-text-sm);
+}
+.ms-search input:focus { background: var(--ms-white); border-color: var(--ms-teal); outline: none; box-shadow: 0 0 0 3px rgba(10, 108, 102, 0.15); }
+.ms-search .ms-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--ms-slate);
+  pointer-events: none;
+}
+.ms-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ms-space-2);
+}
+.ms-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ms-radius);
+  color: var(--ms-graphite);
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.ms-action:hover { background: var(--ms-aluminium); color: var(--ms-graphite); }
+.ms-action.dropdown-toggle::after { display: none; }
+.ms-cart-count {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--ms-teal);
+  color: var(--ms-white);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.ms-menu-toggle { display: none; }
+.ms-header .dropdown-menu {
+  border: 1px solid var(--ms-line);
+  border-radius: var(--ms-radius);
+  box-shadow: 0 8px 24px rgba(28, 33, 38, 0.08);
+  padding: var(--ms-space-2);
+  min-width: 220px;
+}
+.ms-header .dropdown-item {
+  border-radius: 4px;
+  padding: var(--ms-space-2) var(--ms-space-3);
+  font-weight: 500;
+}
+.ms-header .dropdown-item:active { background: var(--ms-teal); }
+.ms-account-name {
+  padding: var(--ms-space-2) var(--ms-space-3);
+  font-size: var(--ms-text-sm);
+  color: var(--ms-slate);
+}
+
+@media (max-width: 991.98px) {
+  .ms-nav, .ms-search { display: none; }
+  .ms-menu-toggle { display: inline-flex; }
+  .ms-actions { margin-left: auto; }
+}
+
+/* Mobile menu (Bootstrap offcanvas) */
+.ms-offcanvas .ms-offcanvas-nav {
+  list-style: none;
+  padding: 0;
+  margin: var(--ms-space-4) 0 0;
+}
+.ms-offcanvas .ms-offcanvas-nav a {
+  display: block;
+  padding: var(--ms-space-3) 0;
+  font-size: var(--ms-text-lg);
+  font-weight: 700;
+  border-bottom: 1px solid var(--ms-line);
+}
+.ms-offcanvas .ms-search { display: block; max-width: none; margin: 0; }
+
+/* ---------------------------------------------------------------------------
+   5. Page title (breadcrumb partial)
+   ------------------------------------------------------------------------- */
+.ms-page-title {
+  padding: var(--ms-space-5) 0 var(--ms-space-4);
+  border-bottom: 1px solid var(--ms-line);
+}
+.ms-page-title h1 { margin: var(--ms-space-2) 0 0; }
+.ms-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ms-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--ms-text-sm);
+  color: var(--ms-slate);
+}
+.ms-breadcrumb li + li::before { content: "/"; margin-right: var(--ms-space-2); color: var(--ms-line); }
+.ms-breadcrumb a { color: var(--ms-slate); }
+.ms-breadcrumb a:hover { color: var(--ms-teal); }
+
+/* ---------------------------------------------------------------------------
+   6. Footer
+   ------------------------------------------------------------------------- */
+.ms-footer {
+  margin-top: var(--ms-space-6);
+  background: var(--ms-graphite);
+  color: #c5ccd2;
+  padding: var(--ms-space-6) 0 var(--ms-space-4);
+  font-size: var(--ms-text-sm);
+}
+.ms-footer .ms-brand { color: var(--ms-white); }
+.ms-footer p { color: #aeb7bf; font-size: var(--ms-text-sm); }
+.ms-footer h2 {
+  font-size: var(--ms-text-base);
+  font-weight: 700;
+  color: var(--ms-white);
+  margin-bottom: var(--ms-space-3);
+}
+.ms-footer ul { list-style: none; padding: 0; margin: 0; }
+.ms-footer li + li { margin-top: var(--ms-space-2); }
+.ms-footer a { color: #c5ccd2; }
+.ms-footer a:hover { color: var(--ms-white); }
+.ms-footer__facts li { display: flex; gap: var(--ms-space-2); align-items: flex-start; }
+.ms-footer__facts .ms-icon { width: 18px; height: 18px; color: #8fd1cb; margin-top: 2px; }
+.ms-footer__bottom {
+  margin-top: var(--ms-space-5);
+  padding-top: var(--ms-space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: #8b959e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

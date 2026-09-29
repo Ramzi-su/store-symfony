@@ -1,141 +1,52 @@
-{# templates/partials/footer.html.twig #}
-<footer id="footer" class="overflow-hidden">
-    <div class="container">
-        <div class="row">
-            <div class="footer-top-area">
-                <div class="row d-flex flex-wrap justify-content-between">
-                    <div class="col-lg-3 col-sm-6 pb-3">
-                        <div class="footer-menu">
-                            <img src="{{ asset('images/main-logo.png') }}" alt="logo">
-                            <p>Nisi, purus vitae, ultrices nunc. Sit ac sit suscipit hendrerit. Gravida massa volutpat aenean odio erat nullam fringilla.</p>
-                            <div class="social-links">
-                                <ul class="d-flex list-unstyled">
-                                    <li>
-                                        <a href="#">
-                                            <svg class="facebook">
-                                                <use xlink:href="#facebook" />
-                                            </svg>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#">
-                                            <svg class="instagram">
-                                                <use xlink:href="#instagram" />
-                                            </svg>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#">
-                                            <svg class="twitter">
-                                                <use xlink:href="#twitter" />
-                                            </svg>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#">
-                                            <svg class="linkedin">
-                                                <use xlink:href="#linkedin" />
-                                            </svg>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#">
-                                            <svg class="youtube">
-                                                <use xlink:href="#youtube" />
-                                            </svg>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-sm-6 pb-3">
-                        <div class="footer-menu text-uppercase">
-                            <h5 class="widget-title pb-2">Quick Links</h5>
-                            <ul class="menu-list list-unstyled text-uppercase">
-                                <li class="menu-item pb-2">
-                                    <a href="{{ path('app_home') }}">Home</a>
-                                </li>
-                                <li class="menu-item pb-2">
-                                    <a href="{{ path('app_about') }}">About</a>
-                                </li>
-                                <li class="menu-item pb-2">
-                                    <a href="{{ path('app_shop') }}">Shop</a>
-                                </li>
-                                <li class="menu-item pb-2">
-                                    <a href="{{ path('app_blog') }}">Blogs</a>
-                                </li>
-                                <li class="menu-item pb-2">
-                                    <a href="{{ path('app_contact') }}">Contact</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 pb-3">
-                        <div class="footer-menu text-uppercase">
-                            <h5 class="widget-title pb-2">Help & Info Help</h5>
-                            <ul class="menu-list list-unstyled">
-                                <li class="menu-item pb-2">
-                                    <a href="#">Track Your Order</a>
-                                </li>
-                                <li class="menu-item pb-2">
-                                    <a href="#">Returns Policies</a>
-                                </li>
-                                <li class="menu-item pb-2">
-                                    <a href="#">Shipping + Delivery</a>
-                                </li>
-                                <li class="menu-item pb-2">
-                                    <a href="#">Contact Us</a>
-                                </li>
-                                <li class="menu-item pb-2">
-                                    <a href="#">Faqs</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 pb-3">
-                        <div class="footer-menu contact-item">
-                            <h5 class="widget-title text-uppercase pb-2">Contact Us</h5>
-                            <p>Do you have any queries or suggestions? <a href="mailto:">yourinfo@gmail.com</a>
-                            </p>
-                            <p>If you need support? Just give us a call. <a href="">+55 111 222 333 44</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+{# Only facts the shop actually applies: shipping comes from the same constant as the cart. #}
+<footer class="ms-footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <a class="ms-brand" href="{{ path('app_home') }}">MiniStore</a>
+        <p class="mt-3">Smartphones, montres connectées et audio.</p>
+        <ul class="ms-footer__facts mt-3">
+          <li>
+            <svg class="ms-icon" aria-hidden="true"><use href="#truck"></use></svg>
+            <span>Livraison {{ constant('App\\Cart\\CartTotals::SHIPPING_COST')|money }} par commande</span>
+          </li>
+          <li>
+            <svg class="ms-icon" aria-hidden="true"><use href="#lock"></use></svg>
+            <span>Paiement sécurisé par Stripe</span>
+          </li>
+        </ul>
+      </div>
+
+      <nav class="col-6 col-lg-2 offset-lg-2" aria-labelledby="footer-shop">
+        <h2 id="footer-shop">Boutique</h2>
+        <ul>
+          <li><a href="{{ path('app_shop') }}">Tous les produits</a></li>
+          <li><a href="{{ path('app_cart') }}">Panier</a></li>
+        </ul>
+      </nav>
+
+      <nav class="col-6 col-lg-2" aria-labelledby="footer-account">
+        <h2 id="footer-account">Compte</h2>
+        <ul>
+          {% if app.user %}
+            <li><a href="{{ path('app_account') }}">Mon compte</a></li>
+            <li><a href="{{ path('app_orders') }}">Mes commandes</a></li>
+          {% else %}
+            <li><a href="{{ path('app_login') }}">Se connecter</a></li>
+            <li><a href="{{ path('app_register') }}">Créer un compte</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+
+      <nav class="col-6 col-lg-2" aria-labelledby="footer-help">
+        <h2 id="footer-help">Aide</h2>
+        <ul>
+          <li><a href="{{ path('app_contact') }}">Contact</a></li>
+          <li><a href="{{ path('app_about') }}">À propos</a></li>
+        </ul>
+      </nav>
     </div>
-    <hr>
+
+    <div class="ms-footer__bottom">© {{ 'now'|date('Y') }} MiniStore</div>
+  </div>
 </footer>
-<div id="footer-bottom">
-    <div class="container">
-        <div class="row d-flex flex-wrap justify-content-between">
-            <div class="col-md-4 col-sm-6">
-                <div class="Shipping d-flex">
-                    <p>We ship with:</p>
-                    <div class="card-wrap ps-2">
-                        <img src="{{ asset('images/dhl.png') }}" alt="visa">
-                        <img src="{{ asset('images/shippingcard.png') }}" alt="mastercard">
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="payment-method d-flex">
-                    <p>Payment options:</p>
-                    <div class="card-wrap ps-2">
-                        <img src="{{ asset('images/visa.jpg') }}" alt="visa">
-                        <img src="{{ asset('images/mastercard.jpg') }}" alt="mastercard">
-                        <img src="{{ asset('images/paypal.jpg') }}" alt="paypal">
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="copyright">
-                    <p>© Copyright {{ "now"|date("Y") }} MiniStore. Design by <a href="https://templatesjungle.com/">TemplatesJungle</a> Distribution by <a href="https://themewagon.com">ThemeWagon</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>

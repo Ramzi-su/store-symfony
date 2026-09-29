@@ -33,7 +33,8 @@ final class ShopController extends AbstractController
             $criteria['category'] = $category;
         }
 
-        $products = $productRepository->findBy($criteria, ['createdAt' => 'DESC']);
+        $search = mb_substr(trim((string) $request->query->get('q', '')), 0, 100);
+        $products = $productRepository->search($category, $search);
         $totalProducts = count($products);
 
         // ✅ Catégories dynamiques

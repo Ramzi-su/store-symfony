@@ -47,3 +47,6 @@ yarn-error.log*
 /public/uploads/
 # Tool state written in the project when HOME points to it (e.g. the Stripe SDK telemetry id)
 /.config/
+
+# Screenshots and snapshots from the Playwright browser tool
+/.playwright-mcp/

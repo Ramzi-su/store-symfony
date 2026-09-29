@@ -1,19 +1,16 @@
-{# templates/partials/breadcrumb.html.twig #}
-<section class="page-title-section bg-light-blue">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-center">
-                <h1 class="display-4 text-uppercase text-dark">{{ page_title }}</h1>
-                <div class="breadcrumb-trail">
-                    <a href="{{ path('app_home') }}" class="text-decoration-none text-primary">Home</a>
-                    {% if parent_page is defined and parent_page %}
-                        <span class="mx-2">/</span>
-                        <a href="{{ path(parent_route) }}" class="text-decoration-none text-primary">{{ parent_page }}</a>
-                    {% endif %}
-                    <span class="mx-2">/</span>
-                    <span class="text-dark">{{ page_title }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
+{# Page title with its breadcrumb trail.
+   Parameters: page_title (required), parent_page + parent_route (optional). #}
+<section class="ms-page-title">
+  <div class="container">
+    <nav aria-label="Fil d’Ariane">
+      <ol class="ms-breadcrumb">
+        <li><a href="{{ path('app_home') }}">Accueil</a></li>
+        {% if parent_page is defined and parent_page %}
+          <li><a href="{{ path(parent_route) }}">{{ parent_page == 'Shop' ? 'Boutique' : parent_page }}</a></li>
+        {% endif %}
+        <li aria-current="page">{{ page_title }}</li>
+      </ol>
+    </nav>
+    <h1>{{ page_title }}</h1>
+  </div>
 </section>
