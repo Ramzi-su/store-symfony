@@ -16,7 +16,7 @@ class ProductPageTest extends DatabaseWebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h2.product-title', 'Test Phone');
-        $this->assertSelectorTextContains('.product-price', '$19.99');
+        $this->assertSelectorTextContains('.product-price', "19,99\u{00A0}$");
         $this->assertSelectorTextContains('.product-actions', '10 in stock');
     }
 

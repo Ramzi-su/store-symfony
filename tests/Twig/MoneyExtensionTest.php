@@ -16,11 +16,11 @@ class MoneyExtensionTest extends TestCase
 
     public static function amounts(): iterable
     {
-        yield 'whole dollars' => [10000, '$100.00'];
-        yield 'cents' => [1999, '$19.99'];
-        yield 'less than a dollar' => [5, '$0.05'];
-        yield 'thousands separator' => [123456789, '$1,234,567.89'];
-        yield 'negative (refund)' => [-250, '-$2.50'];
+        yield 'whole dollars' => [10000, "100,00\u{00A0}$"];
+        yield 'cents' => [1999, "19,99\u{00A0}$"];
+        yield 'less than a dollar' => [5, "0,05\u{00A0}$"];
+        yield 'thousands separator' => [123456789, "1\u{202F}234\u{202F}567,89\u{00A0}$"];
+        yield 'negative (refund)' => [-250, "-2,50\u{00A0}$"];
         yield 'missing amount' => [null, ''];
     }
 }

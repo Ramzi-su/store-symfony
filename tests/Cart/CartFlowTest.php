@@ -27,7 +27,7 @@ class CartFlowTest extends DatabaseWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('2', $crawler->filter('.quantity-input')->attr('value'));
         // 2 x $100.00 + $10.00 shipping + $20.00 tax
-        $this->assertSelectorTextContains('.cart-summary', '$230.00');
+        $this->assertSelectorTextContains('.cart-summary', "230,00\u{00A0}$");
     }
 
     public function testLoggedInUserCanAddToCart(): void

@@ -28,7 +28,7 @@ class OrderAccessTest extends DatabaseWebTestCase
         $this->client->request('GET', '/account/orders/' . $this->order->getId());
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('body', '$120.00');
+        $this->assertSelectorTextContains('body', "120,00\u{00A0}$");
         $this->assertSelectorTextContains('body', 'Payée');
         $this->assertSelectorNotExists('a[href$="/edit"]', 'Customers must not see admin actions.');
     }
