@@ -22,8 +22,9 @@ class Product
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
-    private ?string $price = null;
+    // Amount in cents (1999 = $19.99): integers avoid floating-point rounding errors.
+    #[ORM\Column]
+    private ?int $price = null;
 
     #[ORM\Column]
     private ?int $stock = null;
@@ -53,8 +54,8 @@ class Product
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(string $description): static { $this->description = $description; return $this; }
 
-    public function getPrice(): ?string { return $this->price; }
-    public function setPrice(string $price): static { $this->price = $price; return $this; }
+    public function getPrice(): ?int { return $this->price; }
+    public function setPrice(int $price): static { $this->price = $price; return $this; }
 
     public function getStock(): ?int { return $this->stock; }
     public function setStock(int $stock): static { $this->stock = $stock; return $this; }

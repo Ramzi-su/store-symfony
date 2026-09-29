@@ -65,7 +65,7 @@ class CartService
 
     public function getTotals(): CartTotals
     {
-        $subtotal = 0.0;
+        $subtotal = 0;
         foreach ($this->getLines() as $line) {
             $subtotal += $line->getSubtotal();
         }

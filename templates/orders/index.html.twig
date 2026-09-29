@@ -37,7 +37,7 @@
             {% for order in orders %}
               <tr>
                 <td>{{ order.id }}</td>
-                <td>${{ order.total|number_format(2, '.', ',') }}</td>
+                <td>{{ order.total|money }}</td>
                 <td>
                   {{ include('orders/_status_badge.html.twig', {status: order.status}) }}
                 </td>

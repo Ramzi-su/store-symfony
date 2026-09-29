@@ -134,7 +134,7 @@
                         </div>
                       </div>
                       <div class="col-md-2 text-center">
-                        <span class="price">${{ item.product.price|number_format(2) }}</span>
+                        <span class="price">{{ item.product.price|money }}</span>
                       </div>
                       <div class="col-md-2 text-center">
                         <form action="{{ path('app_cart_update', {'id': item.product.id}) }}" method="post" class="quantity-form">
@@ -149,7 +149,7 @@
                         </form>
                       </div>
                       <div class="col-md-2 text-center">
-                        <span class="subtotal">${{ (item.product.price * item.quantity)|number_format(2) }}</span>
+                        <span class="subtotal">{{ item.subtotal|money }}</span>
                       </div>
                       <div class="col-md-1 text-center">
                         <form action="{{ path('app_cart_remove', {'id': item.product.id}) }}" method="post">
@@ -184,19 +184,19 @@
               <h4 class="mb-4">Cart Totals</h4>
               <div class="summary-item d-flex justify-content-between mb-3">
                 <span>Subtotal</span>
-                <span>${{ cart_subtotal|number_format(2) }}</span>
+                <span>{{ cart_subtotal|money }}</span>
               </div>
               <div class="summary-item d-flex justify-content-between mb-3">
                 <span>Shipping</span>
-                <span>${{ shipping_cost|number_format(2) }}</span>
+                <span>{{ shipping_cost|money }}</span>
               </div>
               <div class="summary-item d-flex justify-content-between mb-3">
                 <span>Tax</span>
-                <span>${{ tax|number_format(2) }}</span>
+                <span>{{ tax|money }}</span>
               </div>
               <div class="summary-item d-flex justify-content-between mb-3 border-top pt-3">
                 <span class="fw-bold">Total</span>
-                <span class="fw-bold">${{ cart_total|number_format(2) }}</span>
+                <span class="fw-bold">{{ cart_total|money }}</span>
               </div>
               <a href="{{ path('app_checkout') }}" class="btn btn-primary w-100 mt-3">Proceed to Checkout</a>
               <a href="{{ path('app_shop') }}" class="btn btn-outline-dark w-100 mt-2">Continue Shopping</a>

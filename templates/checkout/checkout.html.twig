@@ -118,25 +118,25 @@
               {% for item in cart_items %}
                 <div class="order-product-item d-flex justify-content-between mb-2">
                   <span>{{ item.product.name }} × {{ item.quantity }}</span>
-                  <span>${{ (item.product.price * item.quantity)|number_format(2) }}</span>
+                  <span>{{ item.subtotal|money }}</span>
                 </div>
               {% endfor %}
             </div>
             <div class="order-subtotal d-flex justify-content-between mb-2">
               <span>Subtotal</span>
-              <span>${{ cart_subtotal|number_format(2) }}</span>
+              <span>{{ cart_subtotal|money }}</span>
             </div>
             <div class="order-shipping d-flex justify-content-between mb-2">
               <span>Shipping</span>
-              <span>${{ shipping_cost|number_format(2) }}</span>
+              <span>{{ shipping_cost|money }}</span>
             </div>
             <div class="order-tax d-flex justify-content-between mb-2">
               <span>Tax</span>
-              <span>${{ tax|number_format(2) }}</span>
+              <span>{{ tax|money }}</span>
             </div>
             <div class="order-total d-flex justify-content-between border-top pt-2 mb-4">
               <span class="fw-bold">Total</span>
-              <span class="fw-bold">${{ cart_total|number_format(2) }}</span>
+              <span class="fw-bold">{{ cart_total|money }}</span>
             </div>
             <div class="payment-methods mb-4">
               <div class="form-check mb-2">

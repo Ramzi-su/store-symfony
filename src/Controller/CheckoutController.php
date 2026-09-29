@@ -146,7 +146,7 @@ class CheckoutController extends AbstractController
                 $lineItems[] = [
                     'price_data' => [
                         'currency' => 'usd',
-                        'unit_amount' => $this->toCents($line->product->getPrice()),
+                        'unit_amount' => $line->product->getPrice(),
                         'product_data' => [
                             'name' => $line->product->getName(),
                             // Stripe needs absolute, publicly reachable URLs.
@@ -163,7 +163,7 @@ class CheckoutController extends AbstractController
                 $lineItems[] = [
                     'price_data' => [
                         'currency' => 'usd',
-                        'unit_amount' => $this->toCents($totals->shipping),
+                        'unit_amount' => $totals->shipping,
                         'product_data' => ['name' => 'Shipping'],
                     ],
                     'quantity' => 1,
@@ -174,7 +174,7 @@ class CheckoutController extends AbstractController
                 $lineItems[] = [
                     'price_data' => [
                         'currency' => 'usd',
-                        'unit_amount' => $this->toCents($totals->tax),
+                        'unit_amount' => $totals->tax,
                         'product_data' => ['name' => 'Tax'],
                     ],
                     'quantity' => 1,
@@ -314,11 +314,5 @@ class CheckoutController extends AbstractController
             $order->setStatus(OrderStatus::Paid);
             $this->em->flush();
         }
-    }
-
-    // round() first: 19.99 * 100 is 1998.9999... in floating point, and (int) alone would give 1998.
-    private function toCents(float $amount): int
-    {
-        return (int) round($amount * 100);
     }
 }

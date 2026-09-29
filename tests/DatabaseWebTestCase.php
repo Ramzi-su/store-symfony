@@ -32,7 +32,8 @@ abstract class DatabaseWebTestCase extends WebTestCase
         $schemaTool->createSchema($metadata);
     }
 
-    protected function createProduct(string $name = 'Test Phone', string $price = '100'): Product
+    // $price in cents.
+    protected function createProduct(string $name = 'Test Phone', int $price = 10000): Product
     {
         $product = (new Product())
             ->setName($name)

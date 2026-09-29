@@ -54,7 +54,7 @@
               <span class="rating-count text-muted">({{ product.reviews_count }} reviews)</span>
             </div>
             <div class="product-price mb-3">
-              <span class="price h4">${{ product.price }}</span>
+              <span class="price h4">{{ product.price|money }}</span>
               {% if product.old_price %}
                 <span class="old-price text-muted text-decoration-line-through ms-2">${{ product.old_price }}</span>
               {% endif %}

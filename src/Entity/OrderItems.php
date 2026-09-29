@@ -27,8 +27,9 @@ class OrderItems
     #[ORM\Column]
     private ?int $quantity = null;
 
+    // Unit price in cents, copied from the product when the order is placed.
     #[ORM\Column]
-    private ?float $price = null;
+    private ?int $price = null;
 
     // Product options chosen in the cart, copied at order time.
     #[ORM\Column(length: 50, nullable: true)]
@@ -75,12 +76,12 @@ class OrderItems
         return $this;
     }
 
-    public function getPrice(): ?float
+    public function getPrice(): ?int
     {
         return $this->price;
     }
 
-    public function setPrice(float $price): static
+    public function setPrice(int $price): static
     {
         $this->price = $price;
         return $this;

@@ -25,8 +25,9 @@ class Orders
     #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id", nullable: true)]
     private ?User $user = null;
 
+    // All amounts are in cents.
     #[ORM\Column]
-    private ?float $total = null;
+    private ?int $total = null;
 
     #[ORM\Column(length: 255, enumType: OrderStatus::class)]
     private ?OrderStatus $status = null;
@@ -35,13 +36,13 @@ class Orders
     private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\Column(nullable: true)]
-    private ?float $subtotal = null;
+    private ?int $subtotal = null;
 
     #[ORM\Column(nullable: true)]
-    private ?float $tax = null;
+    private ?int $tax = null;
 
     #[ORM\Column(nullable: true)]
-    private ?float $shippingCost = null;
+    private ?int $shippingCost = null;
 
     // Customer details typed in the checkout form. Columns are nullable because orders
     // created before this migration have none; the "checkout" validation group makes
@@ -107,8 +108,8 @@ class Orders
     public function getUser(): ?User { return $this->user; }
     public function setUser(?User $user): static { $this->user = $user; return $this; }
 
-    public function getTotal(): ?float { return $this->total; }
-    public function setTotal(float $total): static { $this->total = $total; return $this; }
+    public function getTotal(): ?int { return $this->total; }
+    public function setTotal(int $total): static { $this->total = $total; return $this; }
 
     public function getStatus(): ?OrderStatus { return $this->status; }
     public function setStatus(OrderStatus $status): static { $this->status = $status; return $this; }
@@ -116,14 +117,14 @@ class Orders
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->created_at; }
     public function setCreatedAt(\DateTimeImmutable $created_at): static { $this->created_at = $created_at; return $this; }
 
-    public function getSubtotal(): ?float { return $this->subtotal; }
-    public function setSubtotal(?float $subtotal): static { $this->subtotal = $subtotal; return $this; }
+    public function getSubtotal(): ?int { return $this->subtotal; }
+    public function setSubtotal(?int $subtotal): static { $this->subtotal = $subtotal; return $this; }
 
-    public function getTax(): ?float { return $this->tax; }
-    public function setTax(?float $tax): static { $this->tax = $tax; return $this; }
+    public function getTax(): ?int { return $this->tax; }
+    public function setTax(?int $tax): static { $this->tax = $tax; return $this; }
 
-    public function getShippingCost(): ?float { return $this->shippingCost; }
-    public function setShippingCost(?float $shippingCost): static { $this->shippingCost = $shippingCost; return $this; }
+    public function getShippingCost(): ?int { return $this->shippingCost; }
+    public function setShippingCost(?int $shippingCost): static { $this->shippingCost = $shippingCost; return $this; }
 
     public function getFirstName(): ?string { return $this->firstName; }
     public function setFirstName(?string $firstName): static { $this->firstName = $firstName; return $this; }

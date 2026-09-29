@@ -18,8 +18,9 @@ final readonly class CartLine
     ) {
     }
 
-    public function getSubtotal(): float
+    // In cents.
+    public function getSubtotal(): int
     {
-        return (float) $this->product->getPrice() * $this->quantity;
+        return $this->product->getPrice() * $this->quantity;
     }
 }

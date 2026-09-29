@@ -82,28 +82,28 @@
                             </div>
                           </div>
                         </td>
-                        <td class="text-center">${{ item.price|number_format(2) }}</td>
+                        <td class="text-center">{{ item.price|money }}</td>
                         <td class="text-center">{{ item.quantity }}</td>
-                        <td class="text-end">${{ (item.price * item.quantity)|number_format(2) }}</td>
+                        <td class="text-end">{{ (item.price * item.quantity)|money }}</td>
                       </tr>
                     {% endfor %}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td colspan="3" class="text-end">Subtotal</td>
-                      <td class="text-end">${{ order.subtotal|number_format(2) }}</td>
+                      <td class="text-end">{{ order.subtotal|money }}</td>
                     </tr>
                     <tr>
                       <td colspan="3" class="text-end">Shipping</td>
-                      <td class="text-end">${{ order.shippingCost|number_format(2) }}</td>
+                      <td class="text-end">{{ order.shippingCost|money }}</td>
                     </tr>
                     <tr>
                       <td colspan="3" class="text-end">Tax</td>
-                      <td class="text-end">${{ order.tax|number_format(2) }}</td>
+                      <td class="text-end">{{ order.tax|money }}</td>
                     </tr>
                     <tr>
                       <td colspan="3" class="text-end"><strong>Total</strong></td>
-                      <td class="text-end"><strong>${{ order.total|number_format(2) }}</strong></td>
+                      <td class="text-end"><strong>{{ order.total|money }}</strong></td>
                     </tr>
                   </tfoot>
                 </table>
