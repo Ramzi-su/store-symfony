@@ -90,7 +90,8 @@ class SecurityController extends AbstractController
         }
 
         return $this->render('security/register.html.twig', [
-            'registrationForm' => $form->createView(),
+            // Passing the form (not its view) makes Symfony answer 422 when it is invalid.
+            'registrationForm' => $form,
         ]);
     }
     #[Route('/login', name: 'app_login')]

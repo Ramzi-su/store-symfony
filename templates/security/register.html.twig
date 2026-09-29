@@ -24,6 +24,10 @@
               {% endfor %}
 
               {{ form_start(registrationForm) }}
+                {# Form-level errors (e.g. an invalid CSRF token) are not attached to any field #}
+                {% if registrationForm.vars.errors|length > 0 %}
+                  <div class="alert alert-danger" role="alert">{{ form_errors(registrationForm) }}</div>
+                {% endif %}
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     {{ form_label(registrationForm.firstName) }}
