@@ -26,8 +26,9 @@ COPY . /var/www/html/
 # 6. Donner les bons droits
 RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
 
-# 7. Forcer l'environnement de production pour éviter de charger les modules de debug
+# 7. Forcer l'environnement de production et donner une fausse URL de DB pour la compilation
 ENV APP_ENV=prod
+ENV DATABASE_URL="mysql://user:pass@127.0.0.1:3306/db?serverVersion=8.0.32&charset=utf8mb4"
 
 # 8. Installer les dépendances (sans celles de dev)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
