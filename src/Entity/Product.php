@@ -80,4 +80,9 @@ class Product
         $slugger = new AsciiSlugger();
         $this->slug = strtolower($slugger->slug($this->name)->toString());
     }
+
+    public function __toString(): string
+    {
+        return $this->name ?? 'Produit #' . $this->id;
+    }
 }

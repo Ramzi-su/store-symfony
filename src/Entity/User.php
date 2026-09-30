@@ -91,4 +91,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     // Symfony security
     public function getUserIdentifier(): string { return $this->email; }
     public function eraseCredentials(): void {}
+
+    public function __toString(): string
+    {
+        return $this->firstName . ' ' . $this->lastName . ' (' . $this->email . ')';
+    }
 }
