@@ -24,7 +24,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . /var/www/html/
 
 # 6. Donner les bons droits
-RUN chown -R www-data:www-data /var/www/html/var
+RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
 
 # 7. Installer les dépendances (sans celles de dev)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
