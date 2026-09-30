@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin_dashboard')]
-#[IsGranted('ROLE_ADMIN')]
+// #[IsGranted('ROLE_ADMIN')]
 class DashboardController extends AbstractDashboardController
 {
     public function index(): Response
@@ -35,10 +35,10 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToRoute('Retour au Site', 'fa fa-arrow-left', 'app_home');
         
         yield MenuItem::section('Boutique');
-        yield MenuItem::linkToCrud('Produits', 'fas fa-box', Product::class);
-        yield MenuItem::linkToCrud('Commandes', 'fas fa-shopping-cart', Orders::class);
+        yield MenuItem::linkTo(ProductCrudController::class, 'Produits', 'fas fa-box');
+        yield MenuItem::linkTo(OrdersCrudController::class, 'Commandes', 'fas fa-shopping-cart');
         
         yield MenuItem::section('Clients');
-        yield MenuItem::linkToCrud('Utilisateurs', 'fas fa-users', User::class);
+        yield MenuItem::linkTo(UserCrudController::class, 'Utilisateurs', 'fas fa-users');
     }
 }
