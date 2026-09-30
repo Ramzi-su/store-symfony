@@ -38,3 +38,28 @@ nav:
 
 # ── Header / Brand ─────────────────────────────────────────────────────────────
 brand: "MiniStore"
+
+# ── About page ────────────────────────────────────────────────────────────────
+about:
+  title: "À Propos"
+  story:
+    title: "Notre Histoire"
+    p1: "Né d'une passion pour les technologies de pointe et le design minimaliste, MiniStore a vu le jour dans un petit atelier en 2010. Notre vision était simple : créer un espace où la qualité rencontre la simplicité, en proposant des essentiels tech soigneusement sélectionnés qui subliment le quotidien."
+    p2: "Ce qui a commencé comme un projet nocturne entre trois ingénieurs est rapidement devenu une destination de confiance pour l'électronique moderne. Nous avons éliminé le superflu de la vente au détail traditionnelle pour nous concentrer sur l'essentiel : des performances exceptionnelles, une esthétique épurée et une fiabilité sans compromis."
+    p3: "Aujourd'hui, nous collaborons directement avec des fabricants de premier plan pour vous offrir une sélection exclusive de smartphones, d'appareils connectés et d'accessoires premium. Chaque produit de notre catalogue est rigoureusement testé car nous pensons que la technologie doit être belle, durable et intuitive."
+  shop_now: "Découvrir la boutique"
+  team:
+    title: "Notre Équipe"
+    subtitle: "Une équipe de passionnés qui travaille sans relâche pour vous offrir les meilleurs produits et la meilleure expérience d'achat."
+  values:
+    title: "Nos Valeurs"
+    subtitle: "Ces valeurs fondamentales guident chacune de nos actions chez MiniStore."
+    quality:
+      title: "Qualité"
+      desc: "Nous nous engageons à ne proposer que des produits de la plus haute qualité répondant à nos standards rigoureux."
+    integrity:
+      title: "Intégrité"
+      desc: "Nous menons nos activités avec honnêteté, transparence et une éthique irréprochable en toute circonstance."
+    customer:
+      title: "Centré sur le client"
+      desc: "Nos clients sont au cœur de tout ce que nous faisons. Nous nous efforçons de toujours dépasser vos attentes."

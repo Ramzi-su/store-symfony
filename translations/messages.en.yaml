@@ -38,3 +38,28 @@ nav:
 
 # ── Header / Brand ─────────────────────────────────────────────────────────────
 brand: "MiniStore"
+
+# ── About page ────────────────────────────────────────────────────────────────
+about:
+  title: "About Us"
+  story:
+    title: "Our Story"
+    p1: "Born from a passion for cutting-edge technology and minimalist design, MiniStore started in a small workshop in 2010. We envisioned a place where quality meets simplicity, offering carefully curated tech essentials that elevate everyday life."
+    p2: "What began as a late-night project among three engineers quickly grew into a trusted destination for modern electronics. We stripped away the clutter of traditional retail to focus on what truly matters: exceptional performance, sleek aesthetics, and uncompromising reliability."
+    p3: "Today, we partner directly with top-tier manufacturers to bring you an exclusive selection of smartphones, smart home devices, and premium accessories. Every product in our catalog is rigorously tested because we believe technology should be beautiful, durable, and effortless to use."
+  shop_now: "Shop Now"
+  team:
+    title: "Meet Our Team"
+    subtitle: "Our dedicated team of professionals works tirelessly to bring you the best tech products and shopping experience."
+  values:
+    title: "Our Values"
+    subtitle: "These core values guide everything we do at MiniStore."
+    quality:
+      title: "Quality"
+      desc: "We are committed to offering only the highest quality products that meet our rigorous standards."
+    integrity:
+      title: "Integrity"
+      desc: "We conduct our business with honesty, transparency, and ethical practices at all times."
+    customer:
+      title: "Customer Focus"
+      desc: "Our customers are at the heart of everything we do. We strive to exceed their expectations."
