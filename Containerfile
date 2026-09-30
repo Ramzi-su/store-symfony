@@ -4,10 +4,11 @@ FROM php:8.4-apache
 RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
+    libpq-dev \
     zip \
     unzip \
     git \
-    && docker-php-ext-install intl pdo_mysql zip opcache
+    && docker-php-ext-install intl pdo_mysql pdo_pgsql zip opcache
 
 # 2. Configurer Apache pour pointer vers public/
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
