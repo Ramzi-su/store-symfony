@@ -63,6 +63,6 @@ class CartFlowTest extends DatabaseWebTestCase
 
         $this->assertResponseRedirects('/cart');
         $this->client->followRedirect();
-        $this->assertSelectorTextContains('body', 'Your cart is empty');
+        $this->assertSelectorTextContains('body', 'Votre panier est vide');
     }
 }

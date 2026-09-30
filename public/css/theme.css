@@ -660,3 +660,67 @@ a:hover { color: var(--ms-teal); }
 @media (max-width: 767.98px) {
   .ms-product__grid { grid-template-columns: 1fr; gap: var(--ms-space-4); }
 }
+
+/* ---------------------------------------------------------------------------
+   11. Cart and order summary
+   ------------------------------------------------------------------------- */
+.ms-cart { padding-top: var(--ms-space-4); }
+.ms-cart__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--ms-space-5);
+  align-items: start;
+}
+.ms-cart__lines { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ms-line); }
+.ms-line {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 88px 110px 40px;
+  gap: var(--ms-space-3);
+  align-items: center;
+  padding: var(--ms-space-3) 0;
+  border-bottom: 1px solid var(--ms-line);
+}
+.ms-line__media { display: block; aspect-ratio: 1 / 1; background: var(--ms-aluminium); border-radius: var(--ms-radius); overflow: hidden; }
+.ms-line__media img { width: 100%; height: 100%; object-fit: cover; }
+.ms-line__name { font-weight: 700; }
+.ms-line__options, .ms-line__unit { margin: 2px 0 0; font-size: var(--ms-text-sm); color: var(--ms-slate); }
+.ms-line__qty { margin: 0; }
+.ms-line__qty input { width: 88px; text-align: center; font-weight: 700; }
+.ms-line__subtotal { margin: 0; font-weight: 800; text-align: right; color: var(--ms-graphite); }
+.ms-line__remove { margin: 0; }
+.ms-line__remove .ms-action:hover { color: var(--ms-coral); background: #fbecea; }
+.ms-cart__after { display: flex; justify-content: space-between; align-items: center; padding-top: var(--ms-space-3); }
+.ms-cart__after form { margin: 0; }
+.ms-cart__clear { color: var(--ms-slate); padding: 0; font-weight: 600; text-decoration: none; }
+.ms-cart__clear:hover { color: var(--ms-coral); }
+
+.ms-summary {
+  position: sticky;
+  top: calc(var(--ms-header-height) + var(--ms-space-3));
+  padding: var(--ms-space-4);
+  background: var(--ms-aluminium);
+  border-radius: calc(var(--ms-radius) * 2);
+}
+.ms-summary h2 { font-size: var(--ms-text-lg); margin-bottom: var(--ms-space-3); }
+.ms-summary dl { margin: 0 0 var(--ms-space-4); }
+.ms-summary dl > div { display: flex; justify-content: space-between; gap: var(--ms-space-3); padding: 6px 0; }
+.ms-summary dt { font-weight: 500; color: var(--ms-slate); }
+.ms-summary dd { margin: 0; font-weight: 600; }
+.ms-summary__total { margin-top: var(--ms-space-2); padding-top: var(--ms-space-3) !important; border-top: 1px solid var(--ms-line); }
+.ms-summary__total dt, .ms-summary__total dd { color: var(--ms-graphite); font-size: var(--ms-text-lg); font-weight: 800; }
+.ms-summary__note { display: flex; align-items: center; justify-content: center; gap: var(--ms-space-2); margin: var(--ms-space-3) auto 0; font-size: var(--ms-text-sm); }
+.ms-summary__note .ms-icon { width: 16px; height: 16px; }
+
+@media (max-width: 991.98px) {
+  .ms-cart__grid { grid-template-columns: 1fr; }
+  .ms-summary { position: static; }
+}
+@media (max-width: 575.98px) {
+  /* Row 1: photo, name, remove. Row 2: quantity on the left, line total on the right. */
+  .ms-line { grid-template-columns: 72px minmax(0, 1fr) auto 40px; grid-template-areas: "media info info remove" "media qty total total"; row-gap: var(--ms-space-2); }
+  .ms-line__media { grid-area: media; align-self: start; }
+  .ms-line__info { grid-area: info; }
+  .ms-line__qty { grid-area: qty; }
+  .ms-line__subtotal { grid-area: total; }
+  .ms-line__remove { grid-area: remove; }
+}
