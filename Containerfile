@@ -32,3 +32,6 @@ ENV DATABASE_URL="mysql://user:pass@127.0.0.1:3306/db?serverVersion=8.0.32&chars
 
 # 8. Installer les dépendances (sans celles de dev)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# 9. Démarrer le serveur : Lancer les migrations PUIS démarrer Apache
+CMD php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground
