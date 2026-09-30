@@ -1,0 +1,92 @@
+<style>
+  .pv { font-family: "Manrope", system-ui, sans-serif; border-radius: 14px; padding: 18px; }
+  .pv * { box-sizing: border-box; }
+  .pv .swatches { display: flex; gap: 6px; margin-bottom: 14px; }
+  .pv .sw { width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(0,0,0,.08); }
+  .pv .tile { background: var(--surface); border-radius: 14px; padding: 10px; border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 24px -12px rgba(16,24,40,.18); transition: transform .2s, box-shadow .2s; }
+  .pv .tile:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(16,24,40,.06), 0 18px 36px -14px rgba(16,24,40,.28); }
+  .pv .media { position: relative; aspect-ratio: 4/3; border-radius: 10px; background: var(--media); display: grid; place-items: center; }
+  .pv .badge { position: absolute; top: 8px; left: 8px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--signal); color: #fff; }
+  .pv .name { margin: 10px 2px 2px; font-weight: 700; color: var(--ink); font-size: 14px; }
+  .pv .meta { margin: 0 2px; font-size: 12px; color: var(--muted); }
+  .pv .price { display: flex; align-items: baseline; gap: 8px; margin: 6px 2px 10px; }
+  .pv .price b { font-size: 17px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .pv .price s { font-size: 12px; color: var(--muted); }
+  .pv .btn { display: block; width: 100%; border: 0; border-radius: 10px; padding: 10px; font: 700 13px/1 inherit; font-family: inherit; cursor: pointer; transition: background .15s, transform .1s; }
+  .pv .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .pv .btn-primary:hover { background: var(--accent-hover); }
+  .pv .btn-primary:active { transform: scale(.98); }
+  .pv .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); margin-top: 6px; }
+  .pv .btn-ghost:hover { background: var(--media); }
+  .pv .input { width: 100%; margin-top: 12px; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-family: inherit; font-size: 13px; color: var(--ink); outline: none; }
+  .pv .input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+  .pv .sum { margin-top: 12px; padding: 12px; border-radius: 12px; background: var(--media); font-size: 12px; color: var(--muted); }
+  .pv .sum div { display: flex; justify-content: space-between; padding: 3px 0; }
+  .pv .sum .tot { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 7px; color: var(--ink); font-weight: 800; font-size: 14px; }
+  .pv .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); margin-top: 10px; }
+</style>
+
+<h2>Which palette feels right for MiniStore?</h2>
+<p class="subtitle">Every option shows the same new component style: rounded 14px cards, soft layered shadows, a lift on hover (try it), pill badges, a focus ring (click the input). Only the colors differ. Click to pick one.</p>
+
+<div class="cards">
+  <!-- A: Refined teal -->
+  <div class="card" data-choice="a-refined-teal" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="pv" style="--bg:#f7f8f7; --surface:#fff; --media:#f0f3f2; --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --accent:#0f766e; --accent-hover:#115e59; --on-accent:#fff; --accent-soft:#ccfbf1; --accent-text:#115e59; --ring:rgba(15,118,110,.18); --signal:#e11d48; background:var(--bg);">
+        <div class="swatches"><span class="sw" style="background:#111827"></span><span class="sw" style="background:#0f766e"></span><span class="sw" style="background:#ccfbf1"></span><span class="sw" style="background:#e11d48"></span><span class="sw" style="background:#f7f8f7"></span></div>
+        <div class="tile">
+          <div class="media"><span class="badge">-20 %</span><svg width="44" height="70" viewBox="0 0 44 70"><rect x="2" y="2" width="40" height="66" rx="8" fill="#111827"/><rect x="6" y="8" width="32" height="52" rx="3" fill="#2a3444"/></svg></div>
+          <p class="name">iPhone 15 Pro</p><p class="meta">Smartphone · 128 Go</p>
+          <div class="price"><b>1 199,99 $</b><s>1 499,99 $</s></div>
+          <button class="btn btn-primary">Ajouter au panier</button>
+          <button class="btn btn-ghost">Voir le produit</button>
+        </div>
+        <input class="input" placeholder="Rechercher un produit…">
+        <div class="sum"><div><span>Sous-total</span><span>1 199,99 $</span></div><div><span>Livraison</span><span>Gratuite</span></div><div class="tot"><span>Total</span><span>1 199,99 $</span></div></div>
+        <span class="pill">En stock</span>
+      </div>
+    </div>
+    <div class="card-body"><h3>A · Refined teal</h3><p>Evolution of today's look: deeper teal, crisper near-black, rose instead of coral. Calm, trustworthy, least disruptive.</p></div>
+  </div>
+
+  <!-- B: Ink & indigo -->
+  <div class="card" data-choice="b-ink-indigo" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="pv" style="--bg:#f8fafc; --surface:#fff; --media:#f1f5f9; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --accent:#4f46e5; --accent-hover:#4338ca; --on-accent:#fff; --accent-soft:#e0e7ff; --accent-text:#3730a3; --ring:rgba(79,70,229,.2); --signal:#ef4444; background:var(--bg);">
+        <div class="swatches"><span class="sw" style="background:#0f172a"></span><span class="sw" style="background:#4f46e5"></span><span class="sw" style="background:#e0e7ff"></span><span class="sw" style="background:#ef4444"></span><span class="sw" style="background:#f8fafc"></span></div>
+        <div class="tile">
+          <div class="media"><span class="badge">-20 %</span><svg width="44" height="70" viewBox="0 0 44 70"><rect x="2" y="2" width="40" height="66" rx="8" fill="#0f172a"/><rect x="6" y="8" width="32" height="52" rx="3" fill="#312e81"/></svg></div>
+          <p class="name">iPhone 15 Pro</p><p class="meta">Smartphone · 128 Go</p>
+          <div class="price"><b>1 199,99 $</b><s>1 499,99 $</s></div>
+          <button class="btn btn-primary">Ajouter au panier</button>
+          <button class="btn btn-ghost">Voir le produit</button>
+        </div>
+        <input class="input" placeholder="Rechercher un produit…">
+        <div class="sum"><div><span>Sous-total</span><span>1 199,99 $</span></div><div><span>Livraison</span><span>Gratuite</span></div><div class="tot"><span>Total</span><span>1 199,99 $</span></div></div>
+        <span class="pill">En stock</span>
+      </div>
+    </div>
+    <div class="card-body"><h3>B · Ink &amp; indigo</h3><p>Cool slate neutrals with an indigo accent. The "modern tech / SaaS" look (Stripe, Linear). Very contemporary for an electronics shop.</p></div>
+  </div>
+
+  <!-- C: Monochrome + signal orange -->
+  <div class="card" data-choice="c-mono-orange" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="pv" style="--bg:#fafaf9; --surface:#fff; --media:#f4f4f2; --ink:#0c0c0c; --muted:#71717a; --line:#e7e5e4; --accent:#0c0c0c; --accent-hover:#27272a; --on-accent:#fff; --accent-soft:#ffedd5; --accent-text:#c2410c; --ring:rgba(234,88,12,.22); --signal:#ea580c; background:var(--bg);">
+        <div class="swatches"><span class="sw" style="background:#0c0c0c"></span><span class="sw" style="background:#ea580c"></span><span class="sw" style="background:#ffedd5"></span><span class="sw" style="background:#f4f4f2"></span><span class="sw" style="background:#fafaf9"></span></div>
+        <div class="tile">
+          <div class="media"><span class="badge">-20 %</span><svg width="44" height="70" viewBox="0 0 44 70"><rect x="2" y="2" width="40" height="66" rx="8" fill="#0c0c0c"/><rect x="6" y="8" width="32" height="52" rx="3" fill="#3f3f46"/></svg></div>
+          <p class="name">iPhone 15 Pro</p><p class="meta">Smartphone · 128 Go</p>
+          <div class="price"><b>1 199,99 $</b><s>1 499,99 $</s></div>
+          <button class="btn btn-primary">Ajouter au panier</button>
+          <button class="btn btn-ghost">Voir le produit</button>
+        </div>
+        <input class="input" placeholder="Rechercher un produit…">
+        <div class="sum"><div><span>Sous-total</span><span>1 199,99 $</span></div><div><span>Livraison</span><span>Gratuite</span></div><div class="tot"><span>Total</span><span>1 199,99 $</span></div></div>
+        <span class="pill">En stock</span>
+      </div>
+    </div>
+    <div class="card-body"><h3>C · Monochrome + orange</h3><p>Black buttons on warm white, orange reserved for promos and focus. Premium, product-first (Apple / Nothing style) — photos do the talking.</p></div>
+  </div>
+</div>

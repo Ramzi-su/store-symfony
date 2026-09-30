@@ -24,6 +24,15 @@
     </form>
 
     <div class="ms-actions">
+      <div class="ms-lang-switch">
+        <a href="{{ path('app_set_locale', {locale: 'fr'}) }}"
+           class="ms-lang-btn {% if app.request.locale == 'fr' %}ms-lang-btn--active{% endif %}"
+           aria-label="Français">FR</a>
+        <span class="ms-lang-sep">|</span>
+        <a href="{{ path('app_set_locale', {locale: 'en'}) }}"
+           class="ms-lang-btn {% if app.request.locale == 'en' %}ms-lang-btn--active{% endif %}"
+           aria-label="English">EN</a>
+      </div>
       <div class="dropdown">
         <button class="ms-action dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
           <svg class="ms-icon" aria-hidden="true"><use href="#user"></use></svg>

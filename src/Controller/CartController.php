@@ -52,7 +52,7 @@ class CartController extends AbstractController
             $this->addFlash('warning', $added > 0
                 ? sprintf('Stock limité : seulement %d article(s) ajouté(s).', $added)
                 : 'Vous avez déjà tout le stock disponible dans votre panier.');
-        } else {
+        } elseif (!$request->isXmlHttpRequest()) {
             $this->addFlash('success', 'Produit ajouté au panier.');
         }
 

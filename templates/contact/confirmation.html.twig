@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Message envoyé{% endblock %}
+{% block title %}{{ 'contact.confirmation.title'|trans }}{% endblock %}
 
 {% block body %}
   {% include 'partials/svg_icons.html.twig' %}
@@ -9,9 +9,11 @@
   <section class="container py-5 text-center">
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <h1 class="mb-4 text-success">✅ Merci pour votre message !</h1>
-        <p class="lead">Nous vous répondrons dans les plus brefs délais.</p>
-        <a href="{{ path('app_home') }}" class="btn btn-outline-primary mt-4">Retour à l'accueil</a>
+        <h1 class="mb-4 text-success">✅ {{ 'contact.confirmation.heading'|trans }}</h1>
+        <p class="lead">{{ 'contact.confirmation.body'|trans }}</p>
+        <a href="{{ path('app_home') }}" class="btn btn-outline-primary mt-4">
+          {{ 'contact.confirmation.back_home'|trans }}
+        </a>
       </div>
     </div>
   </section>

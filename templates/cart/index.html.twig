@@ -7,7 +7,33 @@
   <script>
     // Quantity changes are saved right away; the form still works without JavaScript (Update button).
     document.querySelectorAll('.quantity-form').forEach(function (form) {
-      form.querySelector('.quantity-input').addEventListener('change', function () { form.submit(); });
+      var input = form.querySelector('.quantity-input');
+      
+      input.addEventListener('change', function () { form.submit(); });
+
+      var btnMinus = form.querySelector('.btn-qty-minus');
+      if (btnMinus) {
+          btnMinus.addEventListener('click', function() {
+              var val = parseInt(input.value) || 0;
+              var min = parseInt(input.min) || 1;
+              if (val > min) {
+                  input.value = val - 1;
+                  input.dispatchEvent(new Event('change'));
+              }
+          });
+      }
+
+      var btnPlus = form.querySelector('.btn-qty-plus');
+      if (btnPlus) {
+          btnPlus.addEventListener('click', function() {
+              var val = parseInt(input.value) || 0;
+              var max = parseInt(input.max) || 99;
+              if (val < max) {
+                  input.value = val + 1;
+                  input.dispatchEvent(new Event('change'));
+              }
+          });
+      }
     });
   </script>
 {% endblock %}
@@ -54,12 +80,15 @@
                   <input type="hidden" name="_token" value="{{ csrf_token('cart') }}">
                   <input type="hidden" name="color" value="{{ item.color }}">
                   <input type="hidden" name="storage" value="{{ item.storage }}">
-                  <label>
-                    <span class="ms-visually-hidden">Quantité de {{ item.product.name }}</span>
-                    <input class="form-control quantity-input" type="number" name="quantity" value="{{ item.quantity }}"
+                  
+                  <div class="input-group ms-qty-group" style="width: 120px;">
+                    <button type="button" class="btn btn-outline-secondary btn-qty-minus">-</button>
+                    <input class="form-control quantity-input text-center px-1" type="number" name="quantity" value="{{ item.quantity }}"
                            min="1" max="{{ min(item.product.stock, 99) }}">
-                  </label>
-                  <noscript><button type="submit" class="btn btn-outline-dark btn-sm">Mettre à jour</button></noscript>
+                    <button type="button" class="btn btn-outline-secondary btn-qty-plus">+</button>
+                  </div>
+
+                  <noscript><button type="submit" class="btn btn-outline-dark btn-sm mt-2">Mettre à jour</button></noscript>
                 </form>
 
                 <p class="ms-line__subtotal ms-price">{{ item.subtotal|money }}</p>

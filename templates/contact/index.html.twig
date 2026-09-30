@@ -1,17 +1,23 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Contactez-nous{% endblock %}
+{% block title %}{{ 'contact.title'|trans }}{% endblock %}
 
 {% block body %}
+  {% include 'partials/svg_icons.html.twig' %}
+  {% include 'partials/header.html.twig' %}
+
   <section class="container py-5">
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <h1 class="mb-4 text-center">Contactez-nous</h1>
+
+        <a href="{{ path('app_home') }}" class="btn btn-outline-dark btn-sm mb-4">
+          {{ 'contact.back'|trans }}
+        </a>
+
+        <h1 class="mb-4 text-center">{{ 'contact.title'|trans }}</h1>
 
         {% for message in app.flashes('success') %}
-          <div class="alert alert-success">
-            {{ message }}
-          </div>
+          <div class="alert alert-success">{{ message }}</div>
         {% endfor %}
 
         {{ form_start(form) }}
@@ -40,4 +46,6 @@
       </div>
     </div>
   </section>
+
+  {% include 'partials/footer.html.twig' %}
 {% endblock %}

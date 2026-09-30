@@ -53,10 +53,86 @@
 
     }
 
+    var cartAnimation = function() {
+      $(document).on('submit', 'form', function(e) {
+        var $form = $(this);
+        var action = $form.attr('action');
+
+        // Ne s'applique qu'aux formulaires d'ajout au panier
+        if (!action || action.indexOf('/cart/add') === -1) {
+            return;
+        }
+
+        var $btn = $form.find('button[type="submit"]');
+        if ($btn.prop('disabled')) {
+            return;
+        }
+
+        var $container = $form.closest('.ms-tile, .ms-product__grid');
+        var $image = $container.find('img').first();
+        var $cartIcon = $('.ms-action[href*="/cart"]').first();
+
+        if ($image.length > 0 && $cartIcon.length > 0) {
+            e.preventDefault();
+            $btn.prop('disabled', true);
+
+            var imageOffset = $image.offset();
+            var cartOffset = $cartIcon.offset();
+
+            var $clone = $image.clone()
+                .offset({
+                    top: imageOffset.top,
+                    left: imageOffset.left
+                })
+                .css({
+                    'opacity': '0.9',
+                    'position': 'absolute',
+                    'height': $image.height(),
+                    'width': $image.width(),
+                    'z-index': '999999',
+                    'border-radius': '50%',
+                    'object-fit': 'cover',
+                    'box-shadow': '0px 10px 30px rgba(0,0,0,0.5)'
+                })
+                .appendTo($('body'));
+
+            $clone.animate({
+                'top': cartOffset.top,
+                'left': cartOffset.left,
+                'width': 25,
+                'height': 25,
+                'opacity': 0.1
+            }, 800, 'swing', function() {
+                $clone.remove();
+                $cartIcon.css('transform', 'scale(1.2)');
+                setTimeout(function(){ $cartIcon.css('transform', 'scale(1)'); }, 200);
+            });
+
+            $.ajax({
+                url: $form.attr('action'),
+                method: $form.attr('method') || 'POST',
+                data: $form.serialize(),
+                success: function(data) {
+                    var $parsed = $($.parseHTML(data));
+                    var newCartHtml = $parsed.find('.ms-action[href*="/cart"]').first().html();
+                    if (newCartHtml) {
+                        $('.ms-action[href*="/cart"]').first().html(newCartHtml);
+                    }
+                    $btn.prop('disabled', false);
+                },
+                error: function() {
+                    $form.off('submit')[0].submit();
+                }
+            });
+        }
+      });
+    };
+
     $(document).ready(function() {
 
       searchPopup();
       initProductQty();
+      cartAnimation();
 
       var swiper = new Swiper(".main-swiper", {
         speed: 500,
