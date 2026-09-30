@@ -2,7 +2,8 @@
 
 - **Date:** 2026-09-30
 - **Branch:** `feat/storefront-design`
-- **Status:** approved design, awaiting implementation plan
+- **Status:** approved design, amended after code analysis (see §7, which takes precedence over
+  earlier sections where they differ)
 
 ## 1. Goal
 
@@ -218,3 +219,94 @@ The app runs with `php -S 127.0.0.1:8000 -t public`. After each step:
 | A hook class used by a test is lost in a rewrite | The list in §5.1 is checked at each step; the full suite runs per commit |
 | Unmigrated pages look broken mid-branch | No merge before step 8 |
 | Removing a carousel loses content | Every slide's content is kept as a static grid or scroll-snap row |
+
+## 7. Amendment: findings from the code analysis
+
+Reading every template and requesting every page showed that some pages crash, and that parts of
+§3 did not match the code. The user decided to **fix these in this branch** and to **build the
+blog properly**, with a back-office CRUD and image upload. This section takes precedence over
+§1–§6 where they differ.
+
+### 7.1 Scope changes
+
+**Bug fixes.** Each fix gets its own `fix:` or `refactor:` commit, made before the redesign step
+that covers the page.
+
+| # | Problem | Fix |
+|---|---|---|
+| F1 | Password reset is broken: `reset_password/check_email.html.twig` is missing (500), and after a reset the controller redirects to the route `login`, which does not exist (500) | Create the template. Redirect to `app_login` with a flash message |
+| F2 | The password reset forms have no CSRF protection, and the new password has no rules | Use Symfony form types (CSRF included) with the same rules as registration: `NotBlank`, `Length(min: 8, max: 4096)`, repeated field |
+| F3 | `/user/*` (the `UserController` CRUD) crashes because of wrong route names, duplicates `/admin/users`, and `user/show.html.twig` displays the **password hash** and the **verification code** | Delete `UserController`, `UserType`, `templates/user/`, and the `/user/` entry in `AccessControlTest`. `/admin/users` remains the only user management |
+| F4 | `orders/index` and `orders/show` are shared by customers and admins through `is_granted('ROLE_ADMIN')`, so an admin sees admin actions on their own customer orders | Customer pages render new `account/orders.html.twig` and `account/order_show.html.twig`; `orders/*` becomes admin-only |
+| F5 | Dead templates: `api_register/index.html.twig` (exposes local file paths) and `security/verify_phone.html.twig` | Delete both |
+| F6 | `SortDirection::Descending` (a PHP 8.5-only enum) in `BlogController` and `AdminController`, while `composer.json` allows PHP 8.4 | Use the string `'DESC'` |
+| F7 | Contact form: `->from($data['email'])` sends mail "from" the visitor's address (it fails SPF/DMARC and is a spoofing vector), and the fields have no validation | Send from the shop address with `replyTo` set to the visitor. Add `NotBlank`, `Email` and `Length` constraints |
+| F8 | Checkout: the terms checkbox sits outside `#checkout-form`, so its `required` is never enforced | Add `form="checkout-form"` |
+
+**Blog: new feature work.**
+
+- `Post` gets `slug` (unique, generated once from the title, stable on edit), `excerpt`, `image`
+  (an uploaded file name), `category` (a new `PostCategory` enum: `news` → "Actualités",
+  `guides` → "Guides", `reviews` → "Tests produits") and `author` (ManyToOne `User`, set to null
+  when the user is deleted). There is one migration; the `post` table is empty today.
+- **Public pages:**
+  - `/blog` shows 6 posts per page with a `?categorie=` filter and a sidebar listing real
+    categories (with counts) and recent posts.
+  - `/blog/{slug}` shows a post and returns 404 for an unknown slug.
+  - Content is plain text: it is escaped, then paragraphs and line breaks are kept. No HTML or
+    Markdown is accepted (XSS by design is impossible).
+- **Back office:** `/admin/posts` (list, create, edit, delete with CSRF).
+  - The image upload is validated with `Image(maxSize: '2M', mimeTypes: JPEG/PNG/WebP)`. The file
+    type is detected from the file content, not from its extension.
+  - Files are stored under a random name with an extension derived from the detected type, in
+    `%app.post_upload_dir%`: `public/uploads/posts`, or `var/test-uploads/posts` in the test
+    environment.
+  - The old file is deleted when an image is replaced or a post is deleted.
+- The fake sidebar data (hard-coded categories and tags) and `SinglePostController` are removed.
+  Both routes move to `BlogController`.
+- "Blog" is added to the header and footer navigation.
+
+**Content.** The About page contains a fictional team, a founding year and images that do not
+exist. It is rewritten in French with true facts only: what the shop sells, real stock, Stripe
+payment and the shipping fee.
+
+### 7.2 Corrections to §3
+
+- **No compare-at price:** `Product` only has `isSale`. `PriceTag` takes `price` (and `size`);
+  `ProductCard` shows a "Promo" badge when `isSale` is true, and "Épuisé" / "Plus que N" / "En
+  stock" from `stock`.
+- **Stimulus controllers:** `menu` (it drives a native `<dialog>`, which gives focus trapping and
+  Escape for free), `dropdown`, `dismiss`, `autosubmit` (replaces the inline `onchange` in the
+  shop and the cart script), `confirm` (replaces `onsubmit="return confirm()"`), and `disclosure`
+  (folds the shop filters on small screens, replacing the inline `<script>`). `gallery` and
+  `search` are dropped: the product page shows one image and the header search is a plain form.
+  `hello_controller.js` (a scaffold) is deleted.
+- **Components** are *anonymous* Twig Components (a template with `{% props %}`, no PHP class):
+  `Button`, `Badge`, `Alert`, `Card`, `ProductCard`, `PriceTag`, `EmptyState`, `PageHeader`,
+  `Pagination`.
+- **Layout:** `base.html.twig` renders the header, a flash-message area, `{% block content %}` and
+  the footer inside a default `{% block body %}`. Pages not yet migrated keep overriding `body` and
+  still work during the transition.
+- **Form types:** the Bootstrap classes (`form-control`, …) set in `src/Form/*` are removed so the
+  form theme is the only source of styling. The remaining English labels and messages are
+  translated to French; `RegistrationFormTest` expectations change accordingly.
+- **Extra tokens** for badges and alerts (all AA): `signal-soft #fee2e2` / `signal-ink #991b1b`
+  (6.80:1), `success-soft #dcfce7` / `success-ink #166534` (6.49:1), `warning-soft #fef3c7` /
+  `warning-ink #92400e` (6.37:1).
+
+### 7.3 Corrections to §5 and §6
+
+- **Tests do not need a Tailwind build:** the bundle's strict mode is off in the `test`
+  environment, so it serves the source CSS. The build is still required for `dev` pages and
+  before `asset-map:compile` in production.
+- **Test hooks:** `.card-body` is no longer kept. `RegistrationFormTest` is edited anyway (French
+  messages) and switches to `form[name="registration_form"]`.
+- **New tests:**
+  - `ResetPasswordTest`
+  - `AdminPostTest` (access, upload, a non-image rejected even when named `.jpg`, a stable slug,
+    delete with image clean-up)
+  - `PostSluggerTest`
+  - `BlogPageTest` (list, category filter, escaped content, 404, pagination)
+  - `ContactFormTest`
+  - a final `PageSmokeTest` that requests every GET page with realistic data (products, posts,
+    orders, users) as a guest, a customer and an admin, and expects no 5xx
