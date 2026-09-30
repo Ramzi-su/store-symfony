@@ -26,5 +26,8 @@ COPY . /var/www/html/
 # 6. Donner les bons droits
 RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
 
-# 7. Installer les dépendances (sans celles de dev)
+# 7. Forcer l'environnement de production pour éviter de charger les modules de debug
+ENV APP_ENV=prod
+
+# 8. Installer les dépendances (sans celles de dev)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
