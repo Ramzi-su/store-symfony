@@ -78,6 +78,12 @@ body {
   font-weight: 500;
   line-height: 1.6;
   margin: 0;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 p {
   font-size: 1.2em;
