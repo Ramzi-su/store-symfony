@@ -100,9 +100,17 @@ class VerifyAccountController extends AbstractController
             $user->setVerificationCode($code);
             $em->flush();
 
-            $twilio->sendSms($user->getPhoneNumber(), "Votre nouveau code est : $code");
-
-            $this->addFlash('success', 'Un nouveau code a été envoyé par SMS.');
+            $sent = $twilio->sendSms($user->getPhoneNumber(), "Votre nouveau code est : $code");
+            if (!$sent) {
+                // --- DÉBUT : MODE DÉBOGAGE / CONTOURNEMENT TWILIO ---
+                // À SUPPRIMER EN PRODUCTION (Remettre le message normal ci-dessous)
+                $this->addFlash('warning', "Le SMS n'a pas pu être envoyé. Code de secours (pour tester) : $code");
+                // Message normal pour la production :
+                // $this->addFlash('danger', 'Le SMS n’a pas pu être envoyé. Utilisez « Renvoyer le code ».');
+                // --- FIN : MODE DÉBOGAGE ---
+            } else {
+                $this->addFlash('success', 'Un nouveau code a été envoyé par SMS.');
+            }
         }
 
         return $this->redirectToRoute('app_verify_account', ['email' => $email]);

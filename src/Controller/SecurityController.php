@@ -81,7 +81,12 @@ class SecurityController extends AbstractController
                 "Votre code de vérification est : $verificationCode"
             );
             if (!$sent) {
-                $this->addFlash('danger', 'Le SMS n’a pas pu être envoyé. Utilisez « Renvoyer le code ».');
+                // --- DÉBUT : MODE DÉBOGAGE / CONTOURNEMENT TWILIO ---
+                // À SUPPRIMER EN PRODUCTION (Remettre le message d'erreur normal ci-dessous)
+                $this->addFlash('warning', "Le SMS n'a pas pu être envoyé. Code de secours (pour tester) : $verificationCode");
+                // Message normal pour la production :
+                // $this->addFlash('danger', 'Le SMS n’a pas pu être envoyé. Utilisez « Renvoyer le code ».');
+                // --- FIN : MODE DÉBOGAGE ---
             }
 
             return $this->redirectToRoute('app_verify_account', [
