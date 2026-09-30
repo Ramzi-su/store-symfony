@@ -30,7 +30,7 @@ RUN mkdir -p /var/www/html/var && chown -R www-data:www-data /var/www/html/var
 
 # 7. Forcer l'environnement de production et donner une fausse URL de DB pour la compilation
 ENV APP_ENV=prod
-ENV DATABASE_URL="mysql://user:pass@127.0.0.1:3306/db?serverVersion=8.0.32&charset=utf8mb4"
+ENV DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/db?serverVersion=16&charset=utf8"
 
 # 8. Installer les dépendances (sans celles de dev)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
